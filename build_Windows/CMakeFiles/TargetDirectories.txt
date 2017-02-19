@@ -1,0 +1,3 @@
+C:/Users/Tali.LAPTOP-8TP60N7T/OneDrive/UW Sophomore/GPU/SkeletonProj/build_Windows/CMakeFiles/SkeletonProj.dir
+C:/Users/Tali.LAPTOP-8TP60N7T/OneDrive/UW Sophomore/GPU/SkeletonProj/build_Windows/CMakeFiles/ALL_BUILD.dir
+C:/Users/Tali.LAPTOP-8TP60N7T/OneDrive/UW Sophomore/GPU/SkeletonProj/build_Windows/CMakeFiles/ZERO_CHECK.dir

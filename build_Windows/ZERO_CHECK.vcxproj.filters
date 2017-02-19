@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Tali.LAPTOP-8TP60N7T\OneDrive\UW Sophomore\GPU\SkeletonProj\build_Windows\CMakeFiles\63280e6cf21baaf8c87f3dbf1e7a3dc5\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{669C4C3B-3E12-38F5-8A41-03F64E7C11AD}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

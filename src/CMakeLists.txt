@@ -26,8 +26,8 @@
 cmake_minimum_required(VERSION 2.8)
 
 # Set the name of your project. Change the next two lines to match your current project name.
-project(dist_v1_cuda)
-set(EXE_NAME dist_v1_cuda)
+project(SkeletonProj)
+set(EXE_NAME SkeletonProj)
 
 ## Some compilation options you may want to change
 set(CUDA_COMPUTE_CAPABILITY "30") 
