@@ -1,39 +1,51 @@
 #include "kernel.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <sstream>
 #include <iostream>
+
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
 
 using namespace std;
 
+// TURN THESE CONSTANTS ON AND OFF TO WORK ON DIFFERENT GOALS
 const bool testing = true;
 const bool multipleCoeff = false;
-//extern istream cin;
+const bool convertPolToNewBaseAndBack = false;
 
-int modInverse(int a, int m);
+int2 modInverse(int a, int m);
 int gcdExtended(int a, int b, int *x, int *y);
-int findCoeff(int *shortenedRes, int *mods);
-//int findCoeff(int a12, int modProduct, int counter, int *shortenedRes, int *mods, int arrSize);
+int reconstruct(int *shortenedRes, int *mods);
 
 // Function to find modulo inverse of a
 // PRECONDITION: a and m are coprime
-int modInverse(int a, int m)
+// code authors: GeeksForGeeks
+int2 modInverse(int a, int m)
 {
 	int x, y;
-	int g = gcdExtended(a, m, &x, &y);
-	if (g != 1)
-		printf("Inverse doesn't exist for %d, %d",a,m);
+ 	int g = gcdExtended(a, m, &x, &y);
+	if (g != 1) {
+		printf("Inverse doesn't exist for %d, %d", a, m);
+		return int2{ 0, 0 };
+	}
 	else
 	{
 		// m is added to handle negative x
 		int res = (x%m + m) % m;
 		printf("%d * %d = 1 (mod %d)\n", a, res, m);
-		printf("So %d is the multiplicative inverse of %d (mod %d)\n", res, a, m);
-		return res;
+ 		printf("So %d is the multiplicative inverse of %d (mod %d)\n", res, a, m);
+
+		int otherRes = (y%a + a) % a;
+		printf("%d * %d = 1 (mod %d)\n", m, otherRes, a);
+		printf("So %d is the multiplicative inverse of %d (mod %d)\n", otherRes, m, a);
+
+		return int2{ res, otherRes };
 	}
-	return 0;
 }
 
 // C function for extended Euclidean Algorithm
+// code authors: GeeksForGeeks
 int gcdExtended(int a, int b, int *x, int *y)
 {
 	// Base Case
@@ -55,48 +67,73 @@ int gcdExtended(int a, int b, int *x, int *y)
 }
 
 // PRECONDITION: shortenedRes and mods both contain at least 2 elements
-int findCoeff(int *shortenedRes, int *mods, int arrSize) {
+// calculation stops once result stops changing
+int reconstruct(int *shortenedRes, int *mods, int arrSize) {
 	int a1 = shortenedRes[0];
 	int a2 = shortenedRes[1];
 	int p1 = mods[0];
 	int p2 = mods[1];
-
-	// should return int2 rather than individual value
-	int k1modp2 = modInverse(p1, p2);
-	int k2modp1 = modInverse(p2, p1);
-
-	int a12 = (a2*k1modp2*p1 + a1*k2modp1*p2) % (p1*p2);
+	int a12 = 0;
+	int prevAnswer = -1;
 	
-	int counter = 2;
-	while (counter < numMods) {
-		int a1 = a12;
-		int a2 = shortenedRes[counter];
-		int p1 = p1*p2;
-		int p2 = mods[counter];
-		k1modp2 = modInverse(p1, p2);
-		k2modp1 = modInverse(p2, p1);
+	int counter = 1;
+	while (counter < numMods && a12 != prevAnswer) {
+		if (counter != 1) {
+			a1 = a12;
+			a2 = shortenedRes[counter];
+			p1 = p1*p2;
+			p2 = mods[counter];
+		}
+
+		int2 multiplicativeInverses = modInverse(p1, p2);
+		int k1modp2 = multiplicativeInverses.x;
+		int k2modp1 = multiplicativeInverses.y;
+
+		prevAnswer = a12;
 		a12 = (a2*k1modp2*p1 + a1*k2modp1*p2) % (p1*p2);
+		printf("clue %d gives the number %d \n \n", counter, a12);
+		counter++;
 	}
 
 	return a12;
 }
 
-/*
-// recursive method that takes two array pointers and pointer at next calculated index
-int findCoeff(int a12, int modProduct, int counter, int *shortenedRes, int *mods, int arrSize) {
-	if (counter >= arrSize) {
-		return a12;
+void printArray(int *arr, int size) {
+	std::string build = std::to_string(arr[0]);
+	for (int i = 0; i < size; i++) {
+		build += ", " + std::to_string(arr[i]);
 	}
-	int a1 = a12;
-	int a2 = shortenedRes[counter];
-	int p1 = modProduct;
-	int p2 = mods[counter];
+	std::cout << "print array: " << build << "\n";
+}
 
-	int new_a12 = (a2*modInverse(p1, p2)*p1 + a1*modInverse(p2, p1)*p2) % (p1*p2);
+struct polDense {
+	int base;
+	int *arr;
+	int length;
 
-	return findCoeff(new_a12, p1*p2, ++counter, shortenedRes, mods, arrSize);
-}*/
+	// construct dummy
+	//polDense() : base(0), arr( ) {}
 
+	// construct with values
+	polDense(int mod, int *input, int input_length) : base(mod), arr(input), length(input_length) {}
+
+
+	// returns previous mod base
+	int modAllCoeff(int mod) {
+		int temp = base;
+		for (int i = 0; i < length; i++) {
+			arr[i] %= mod;
+		}
+		base = mod;
+		return temp;
+	}
+
+	void copyDataFrom(polDense other) {
+		base = other.base;
+		memcpy(arr, other.arr, other.length*sizeof(int));
+	}
+
+};
 
 // Driver Program
 int main()
@@ -109,16 +146,49 @@ int main()
 
 		// MAKE THIS PARALLEL
 		for (int i = 0; i < numCoeff; i++) {
-			outputCoeff[i] = findCoeff(shortenedRes[i], mods, numMods);
+			outputCoeff[i] = reconstruct(shortenedRes[i], mods, numMods);
 		}
 	}
 	else if (testing) {
-		int mods[] = { 5, 7, 13, 17, 19 };
-		int clues[] = { 0, 4, 12, 8, 6 };
-		int result = findCoeff(clues, mods, numMods);
-		printf("Riddle answer %d", result);
+		int mods[] = { 3, 5, 7, 11, 13, 17, 19 };
+		int clues[numMods];
+		for (int i = 0; i < numMods; i++) {
+			clues[i] = 331 % mods[i];
+		}
+		// SEND THIS TO THE GPU - AT SOME POINT VIA MERGE SORT
+		int result = reconstruct(clues, mods, numMods);
 	}
-	//char wait;
-	//cin>>wait; // keeps console window open during debug mode
+	else if (convertPolToNewBaseAndBack) {
+		int input[numCoeff];
+		int dummy[numCoeff];
+		for (int i = 0; i < numCoeff; i++) {
+			input[i] = 10 * i;
+			dummy[i] = -1;
+		}
+
+		polDense pol(0,input,numCoeff);
+		//printArray(pol.arr, numCoeff);
+		
+		polDense polModA(0, dummy, numCoeff);
+		polModA.copyDataFrom(pol);
+		polModA.modAllCoeff(17);
+		printArray(polModA.arr, numCoeff);
+
+		polDense polModB(0, dummy, numCoeff);
+		polModB.copyDataFrom(pol);
+		polModB.modAllCoeff(19);
+		printArray(polModB.arr, numCoeff);
+
+		// TEST RECONSTRUCTED ARRAY - WOAH CRASHED
+		int temp[numCoeff];
+		for (int i = 0; i < numCoeff; i++) {
+			int nums[] = { polModA.arr[i], polModB.arr[i] };
+			int mods[] = { 17, 19 };
+			temp[i] = reconstruct(nums, mods, 2);
+		}
+		printArray(temp, numCoeff);
+
+	}
 	return 0;
 }
+

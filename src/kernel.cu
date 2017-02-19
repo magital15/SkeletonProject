@@ -8,7 +8,7 @@
 __global__ void innerProductKernel(float *d_out, float *a, float *b)
 {
 	const int i = blockIdx.x*blockDim.x + threadIdx.x;
-	if (i >= N) return;
+	//if (i >= N) return;
 
 }
 
