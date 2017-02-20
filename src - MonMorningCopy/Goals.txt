@@ -1,0 +1,40 @@
+
+Polynomial struct - stores mod base (0 if nothing specific) and array of coefficients, for now dense polynomial representation. Later we can create a sparse package
+
+Arithmetic Package
+reconstruct(int[] clues, int[] mods, int *output)
+    // keep multiplying by primes until the result stops changing
+add(pol1, pol2) // precondition: both polynomials have the same mod base
+    sparse add joins two lists 
+multiply(pol1, monomialPower) // pol * x^k
+    output size = pol1.coef.length + monomialPower;
+multiply(pol1, scalar)
+    output size = pol1.coef.length;
+polDense modPol(pol1, scalar)
+    mod all coefficients of pol1 by scalar
+
+// client methods
+multiply(pol1, pol2)
+    add all multiply(pol1, monomial of pol2)
+subtract(pol1, pol2)
+    pol2 = multiply(pol2, -1);
+    output = add(pol1, pol2);
+divide(pol1, pol2) // return remainder, once largest power of pol2 < pol1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+2/18 Tali - code updates
+A single value can now be reconstructed from two input arrays, a list of clues and a list of mods used for each clue. This is not yet run on the GPU.
+
+struct polDense created - this structure needs to have functions including "modAllCoefficients" and a "copy all data from another polynomial". Discuss with a c++ expert the pluses and minuses of an array of structs vs a struct with an array - aka CONNER.
+	Struct questions - can it have several constructors?
+		how best to copy data from another structure?
+		how to make sure sizes of arrays are the same?
+		should the struct store a pointer to an array or the actual data?
+	where should the struct be saved?
+
+Worked on sanity check: get a polynomial, convert it to 2 distinct mod bases, reconstruct to get initial coefficients
+
+2/20 Tali Cody - defining structs meetup
+Vascillating between struct of structs and struct of modded arrays. Working on organizing header files with all helper methods AND rewriting methods onto GPU side. Working towards same sanity check.
+TOP PRIORITY: Reconstruct(poly, *indexOfCoefficient)
+THEN: Poly addition and multiplication
