@@ -1,13 +1,14 @@
+#include "structHelperFunctions.h"
 #include "kernel.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <sstream>
-#include <iostream>
-
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
 using namespace std;
+#include <sstream>
+#include <iostream>
 
 // TURN THESE CONSTANTS ON AND OFF TO WORK ON DIFFERENT GOALS
 const bool testing = false;
@@ -18,6 +19,7 @@ int2 modInverse(int a, int m);
 int gcdExtended(int a, int b, int *x, int *y);
 int reconstruct(int *shortenedRes, int *mods);
 
+#pragma region gcd / chinese remainder thm stuff
 // Function to find modulo inverse of a
 // PRECONDITION: a and m are coprime
 // code authors: GeeksForGeeks
@@ -98,78 +100,7 @@ int reconstruct(int *shortenedRes, int *mods, int arrSize) {
 
 	return a12;
 }
-
-typedef struct polDense_t {
-	int base;
-	int length;
-	int arr[0];
-}*polDense;
-
-typedef struct poly_t {
-	polDense members[6];
-}*poly;
-
-
-polDense init(int mod, int *input, int input_length) {
-	polDense p = (polDense)malloc(sizeof(int)*(input_length + 2));
-	//polDense p = init(input_length);
-	(*p).base = mod;
-	(*p).length = input_length;
-	memcpy(input, (*p).arr, input_length*sizeof(int));
-	return p;
-}
-polDense copy(polDense p) {
-	return init((*p).base, (*p).arr, (*p).length);
-}
-
-// returns previous mod base
-int modAllCoeff(polDense p, int newMod) {
-	int temp = (*p).base;
-	for (int i = 0; i < (*p).length; i++) {
-		(*p).arr[i] %= newMod;
-	}
-	(*p).base = newMod;
-	return temp;
-}
-
-polDense copyMod(polDense p, int newMod) {
-	polDense res = init((*p).base, (*p).arr, (*p).length);
-
-	//printf("I copied ");
-	//printArray((*p).arr, (*p).length);
-
-	modAllCoeff(p, newMod);
-
-	//printf("I modded by %d", newMod);
-	//printArray((*res).arr, (*p).length);
-
-	return res;
-}
-
-poly init(int *input, int input_length) {
-	poly p = (poly)malloc(sizeof(int)*(6 * (input_length + 2)));
-
-	(*p).members[0] = init(0, input, input_length);
-	(*p).members[1] = copyMod((*p).members[0], prime0);
-	(*p).members[2] = copyMod((*p).members[0], prime1);
-	(*p).members[3] = copyMod((*p).members[0], prime2);
-	(*p).members[4] = copyMod((*p).members[0], prime3);
-	(*p).members[5] = copyMod((*p).members[0], prime4);
-
-	return p;
-}
-
-void printArray(int *arr, int size) {
-	std::string build = std::to_string(arr[0]);
-	for (int i = 0; i < size; i++) {
-		build += ", " + std::to_string(arr[i]);
-	}
-	std::cout << "print array: " << build << "\n";
-}
-
-void printArray(polDense p) {
-	printArray((*p).arr, (*p).length);
-}
+#pragma endregion
 
 // Driver Program
 int main()
@@ -189,7 +120,7 @@ int main()
 		int mods[] = { 3, 5, 7, 11, 13, 17, 19 };
 		int clues[numMods];
 		for (int i = 0; i < numMods; i++) {
-			clues[i] = -4672 % mods[i];
+			clues[i] = 331 % mods[i];
 		}
 		// SEND THIS TO THE GPU - AT SOME POINT VIA MERGE SORT
 		int result = reconstruct(clues, mods, numMods);
@@ -197,7 +128,7 @@ int main()
 	else if (convertPolToNewBaseAndBack) {
 		int input[numCoeff];
 		for (int i = 0; i < numCoeff; i++) {
-			input[i] = 10 * i;
+			input[i] = 10 * (i+1);
 		}
 		printArray(input, numCoeff);
 
