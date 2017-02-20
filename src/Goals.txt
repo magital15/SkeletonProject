@@ -1,3 +1,4 @@
+
 Polynomial struct - stores mod base (0 if nothing specific) and array of coefficients, for now dense polynomial representation. Later we can create a sparse package
 
 Arithmetic Package
@@ -32,3 +33,8 @@ struct polDense created - this structure needs to have functions including "modA
 	where should the struct be saved?
 
 Worked on sanity check: get a polynomial, convert it to 2 distinct mod bases, reconstruct to get initial coefficients
+
+2/20 Tali Cody - defining structs meetup
+Vascillating between struct of structs and struct of modded arrays. Working on organizing header files with all helper methods AND rewriting methods onto GPU side. Working towards same sanity check.
+TOP PRIORITY: Reconstruct(poly, *indexOfCoefficient)
+THEN: Poly addition and multiplication
