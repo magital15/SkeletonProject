@@ -70,7 +70,7 @@ set(generated_file_internal "C:/Users/Tali.LAPTOP-8TP60N7T/OneDrive/UW Sophomore
 set(generated_cubin_file_internal "C:/Users/Tali.LAPTOP-8TP60N7T/OneDrive/UW Sophomore/GPU/SkeletonProj/build_Windows/CMakeFiles/SkeletonProj.dir//$(Configuration)/SkeletonProj_generated_kernel.cu.obj.cubin.txt") # path
 
 set(CUDA_NVCC_EXECUTABLE "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v8.0/bin/nvcc.exe") # path
-set(CUDA_NVCC_FLAGS -gencode=arch=compute_30,code=sm_30;-gencode=arch=compute_30,code=compute_30;-use_fast_math ;; ) # list
+set(CUDA_NVCC_FLAGS -gencode=arch=compute_20,code=sm_20;-gencode=arch=compute_20,code=compute_20;-use_fast_math ;; ) # list
 # Build specific configuration flags
 set(CUDA_NVCC_FLAGS_DEBUG --device-debug ; )
 set(CUDA_NVCC_FLAGS_RELEASE  ; )

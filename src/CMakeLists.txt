@@ -30,7 +30,7 @@ project(SkeletonProj)
 set(EXE_NAME SkeletonProj)
 
 ## Some compilation options you may want to change
-set(CUDA_COMPUTE_CAPABILITY "30") 
+set(CUDA_COMPUTE_CAPABILITY "20") 
 		# Set the compute capability to 3.0 (valid values are 20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62)
 set(CUDA_FAST_MATH TRUE)  # GPU code only (does not affect CPU)
 set(CUDA_VERBOSE_PTX FALSE

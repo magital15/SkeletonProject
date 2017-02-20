@@ -10,9 +10,9 @@
 using namespace std;
 
 // TURN THESE CONSTANTS ON AND OFF TO WORK ON DIFFERENT GOALS
-const bool testing = true;
+const bool testing = false;
 const bool multipleCoeff = false;
-const bool convertPolToNewBaseAndBack = false;
+const bool convertPolToNewBaseAndBack = true;
 
 int2 modInverse(int a, int m);
 int gcdExtended(int a, int b, int *x, int *y);
@@ -68,6 +68,7 @@ int gcdExtended(int a, int b, int *x, int *y)
 
 // PRECONDITION: shortenedRes and mods both contain at least 2 elements
 // calculation stops once result stops changing
+// TBD negative results
 int reconstruct(int *shortenedRes, int *mods, int arrSize) {
 	int a1 = shortenedRes[0];
 	int a2 = shortenedRes[1];
@@ -98,6 +99,66 @@ int reconstruct(int *shortenedRes, int *mods, int arrSize) {
 	return a12;
 }
 
+typedef struct polDense_t {
+	int base;
+	int length;
+	int arr[0];
+}*polDense;
+
+typedef struct poly_t {
+	polDense members[6];
+}*poly;
+
+
+polDense init(int mod, int *input, int input_length) {
+	polDense p = (polDense)malloc(sizeof(int)*(input_length + 2));
+	//polDense p = init(input_length);
+	(*p).base = mod;
+	(*p).length = input_length;
+	memcpy(input, (*p).arr, input_length*sizeof(int));
+	return p;
+}
+polDense copy(polDense p) {
+	return init((*p).base, (*p).arr, (*p).length);
+}
+
+// returns previous mod base
+int modAllCoeff(polDense p, int newMod) {
+	int temp = (*p).base;
+	for (int i = 0; i < (*p).length; i++) {
+		(*p).arr[i] %= newMod;
+	}
+	(*p).base = newMod;
+	return temp;
+}
+
+polDense copyMod(polDense p, int newMod) {
+	polDense res = init((*p).base, (*p).arr, (*p).length);
+
+	//printf("I copied ");
+	//printArray((*p).arr, (*p).length);
+
+	modAllCoeff(p, newMod);
+
+	//printf("I modded by %d", newMod);
+	//printArray((*res).arr, (*p).length);
+
+	return res;
+}
+
+poly init(int *input, int input_length) {
+	poly p = (poly)malloc(sizeof(int)*(6 * (input_length + 2)));
+
+	(*p).members[0] = init(0, input, input_length);
+	(*p).members[1] = copyMod((*p).members[0], prime0);
+	(*p).members[2] = copyMod((*p).members[0], prime1);
+	(*p).members[3] = copyMod((*p).members[0], prime2);
+	(*p).members[4] = copyMod((*p).members[0], prime3);
+	(*p).members[5] = copyMod((*p).members[0], prime4);
+
+	return p;
+}
+
 void printArray(int *arr, int size) {
 	std::string build = std::to_string(arr[0]);
 	for (int i = 0; i < size; i++) {
@@ -106,34 +167,9 @@ void printArray(int *arr, int size) {
 	std::cout << "print array: " << build << "\n";
 }
 
-struct polDense {
-	int base;
-	int *arr;
-	int length;
-
-	// construct dummy
-	//polDense() : base(0), arr( ) {}
-
-	// construct with values
-	polDense(int mod, int *input, int input_length) : base(mod), arr(input), length(input_length) {}
-
-
-	// returns previous mod base
-	int modAllCoeff(int mod) {
-		int temp = base;
-		for (int i = 0; i < length; i++) {
-			arr[i] %= mod;
-		}
-		base = mod;
-		return temp;
-	}
-
-	void copyDataFrom(polDense other) {
-		base = other.base;
-		memcpy(arr, other.arr, other.length*sizeof(int));
-	}
-
-};
+void printArray(polDense p) {
+	printArray((*p).arr, (*p).length);
+}
 
 // Driver Program
 int main()
@@ -153,19 +189,34 @@ int main()
 		int mods[] = { 3, 5, 7, 11, 13, 17, 19 };
 		int clues[numMods];
 		for (int i = 0; i < numMods; i++) {
-			clues[i] = 331 % mods[i];
+			clues[i] = -4672 % mods[i];
 		}
 		// SEND THIS TO THE GPU - AT SOME POINT VIA MERGE SORT
 		int result = reconstruct(clues, mods, numMods);
 	}
 	else if (convertPolToNewBaseAndBack) {
 		int input[numCoeff];
-		int dummy[numCoeff];
 		for (int i = 0; i < numCoeff; i++) {
 			input[i] = 10 * i;
-			dummy[i] = -1;
 		}
+		printArray(input, numCoeff);
 
+		poly p = init(input, numCoeff);
+		
+		/*for (int i = 0; i < (*(*p).members[0]).length; i++)
+		{
+			if (i == 0) printf("-Original polDense in poly \n");
+			printf("Coefficient %i is: %i\n", i, (*(*p).members[0]).arr[i]);
+		}*/
+		printArray((*p).members[0]);
+		printArray((*p).members[1]);
+		printArray((*p).members[2]);
+		printArray((*p).members[3]);
+		printArray((*p).members[4]);
+		printArray((*p).members[5]);
+
+		
+		/*
 		polDense pol(0,input,numCoeff);
 		//printArray(pol.arr, numCoeff);
 		
@@ -187,8 +238,10 @@ int main()
 			temp[i] = reconstruct(nums, mods, 2);
 		}
 		printArray(temp, numCoeff);
-
+		*/
 	}
+
+
 	return 0;
 }
 
