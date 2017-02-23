@@ -3,12 +3,12 @@
 #define NUMPRIMES 5 // Can only be as long as the array in Prime Setter
 
 typedef struct PolyDense_t {
-	int length;		// length
 	int base;		// base
 	int* coeffs;	// coefficients
 }PolyDense;
 
 typedef struct Poly_t {
+	int length;		// length
 	PolyDense members[NUMPRIMES + 1];
 }Poly;
 

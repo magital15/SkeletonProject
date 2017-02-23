@@ -7,7 +7,7 @@ bool testPolyDense = false;
 bool testGetMods = false;
 bool testAddMods = false;
 bool testScalarMods = false;
-bool testSubtractMods = true;
+bool testSubtractMods = false;
 
 
 void primeSetter(int* primeHolder) {
@@ -28,10 +28,10 @@ int main()
 	int Polynomial1[] = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
 	int p1len = sizeof(Polynomial1)/sizeof(*Polynomial1);
 	Poly a;
+	a.length = p1len;
 	for (int i = 0; i < NUMPRIMES + 1; i++)
 	{
 		a.members[i].coeffs = (int*)calloc(p1len, sizeof(int));
-		a.members[i].length = p1len;
 	}
 	for (int i = 0; i < p1len; i++)
 	{
@@ -43,10 +43,10 @@ int main()
 	int Polynomial2[] = {11, 22, 33, 44, 55, 66, 77, 88, 99, 110};
 	int p2len = sizeof(Polynomial2)/sizeof(*Polynomial2);
 	Poly b;
+	b.length = p2len;
 	for (int i = 0; i < NUMPRIMES + 1; i++)
 	{
 		b.members[i].coeffs = (int*)calloc(p2len, sizeof(int));
-		b.members[i].length = p2len;
 	}
 	for (int i = 0; i < p2len; i++)
 	{
@@ -74,11 +74,10 @@ int main()
 //  a + b = c	--WORKS--
 	
 	Poly c;
+	c.length = a.length;
 	for (int i = 0; i < NUMPRIMES + 1; i++)
 	{
-		c.members[i].coeffs = (int*)calloc(a.members[0].length, 
-										   sizeof(int));
-		c.members[i].length = a.members[0].length;
+		c.members[i].coeffs = (int*)calloc(a.length, sizeof(int));
 	}
 	addPolys(a, b, c, primeArray);
 //	addPolys(a, b, a, primeArray);	// ALSO WORKS
@@ -87,11 +86,10 @@ int main()
 //  a * scalar = d	--WORKS--
 
 	Poly d;
+	d.length = a.length;
 	for (int i = 0; i < NUMPRIMES + 1; i++)
 	{
-		d.members[i].coeffs = (int*)calloc(a.members[0].length, 
-										   sizeof(int));
-		d.members[i].length = a.members[0].length;
+		d.members[i].coeffs = (int*)calloc(a.length, sizeof(int));
 	}
 	scalarMultPoly(a, d, -2, primeArray);
 //	scalarMultPoly(a, a, -2, primeArray);	// ALSO WORKS
@@ -99,11 +97,10 @@ int main()
 //  a - b = e	--TESTING--
 
 	Poly e;
+	e.length = a.length;
 	for (int i = 0; i < NUMPRIMES + 1; i++)
 	{
-		e.members[i].coeffs = (int*)calloc(a.members[0].length, 
-										   sizeof(int));
-		e.members[i].length = a.members[0].length;
+		e.members[i].coeffs = (int*)calloc(a.length, sizeof(int));
 	}
 	subtractPolys(a, b, e, primeArray);
 
@@ -131,7 +128,7 @@ int main()
 
 	if (testPolyDense == true)
 	{
-		for (int i = 0; i < a.members[0].length; i++)
+		for (int i = 0; i < a.length; i++)
 		{
 			printf("Dense Poly 1 in a[%i] is: %i\n", i, 
 					a.members[0].coeffs[i]);
@@ -142,7 +139,7 @@ int main()
 	{
 		for (int j = 0; j < NUMPRIMES + 1; j++)
 		{
-			for (int i = 0; i < a.members[0].length; i++)
+			for (int i = 0; i < a.length; i++)
 			{
 				printf("a.members[%i].c[%i] is: %i\n", j, i, 
 						a.members[j].coeffs[i]);
@@ -154,7 +151,7 @@ int main()
 		{
 			for (int j = 0; j < NUMPRIMES + 1; j++)
 			{
-				for (int i = 0; i < c.members[0].length; i++)
+				for (int i = 0; i < c.length; i++)
 				{
 					printf("c.members[%i].c[%i] is: %i\n", j, i, 
 							c.members[j].coeffs[i]);
@@ -166,7 +163,7 @@ int main()
 		{
 			for (int j = 0; j < NUMPRIMES + 1; j++)
 			{
-				for (int i = 0; i < d.members[0].length; i++)
+				for (int i = 0; i < d.length; i++)
 				{
 					printf("d.members[%i].c[%i] is: %i\n", j, i, 
 							d.members[j].coeffs[i]);
@@ -178,7 +175,7 @@ int main()
 		{
 			for (int j = 0; j < NUMPRIMES + 1; j++)
 			{
-				for (int i = 0; i < e.members[0].length; i++)
+				for (int i = 0; i < e.length; i++)
 				{
 					printf("e.members[%i].c[%i] is: %i\n", j, i, 
 							e.members[j].coeffs[i]);

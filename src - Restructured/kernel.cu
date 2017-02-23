@@ -5,6 +5,8 @@
 __device__
 int getRemainder(int coefficient, int mod)
 {
+	coefficient = coefficient % mod;
+	coefficient += mod;
 	return coefficient % mod;
 }
 
@@ -49,7 +51,7 @@ void minusMult(int* d_out, int* d_in, int scalar, int mod)
 
 void getMods(Poly in, int* primes)
 {
-	int len = in.members[0].length;
+	int len = in.length;
 
 	// Declare pointers to device arrays
 	int *d_in = 0;
@@ -81,7 +83,7 @@ void getMods(Poly in, int* primes)
 
 void addPolys(Poly a, Poly b, Poly c, int* primes)
 {
-	int len = a.members[0].length;
+	int len = a.length;
 
 	// Declare pointers to device arrays
 	int *d_a = 0;
@@ -118,7 +120,7 @@ void addPolys(Poly a, Poly b, Poly c, int* primes)
 
 void scalarMultPoly(Poly in, Poly out, int scalar, int* primes)
 {
-	int len = in.members[0].length;
+	int len = in.length;
 
 	// Declare pointers to device arrays
 	int *d_in = 0;
@@ -157,7 +159,7 @@ void subtractPolys(Poly a, Poly b, Poly c, int* primes)
 
 
 /*
-	int len = a.members[0].length;
+	int len = a.length;
 
 	// Declare pointers to device arrays
 	int *d_a = 0;
