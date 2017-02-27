@@ -1,5 +1,7 @@
-#ifndef STRUCTHELPERFUNCTIONS_H
-#define STRUCTHELPERFUNCTIONS_H
+#ifndef KERNEL_H
+#define KERNEL_H
+#define numCoeff 5
+#define numMods 7
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +18,8 @@ using namespace std;
 #define prime3  17
 #define prime4  19
 
+typedef struct polDense_t;
+typedef struct poly_t;
 typedef struct polDense_t {
 	int base;
 	int length;
@@ -33,6 +37,7 @@ polDense copyMod(polDense p, int newMod);
 poly init(int *input, int input_length);
 void printArray(int *arr, int size);
 void printArray(polDense p);
+
 
 polDense init(int mod, int *input, int input_length) {
 	polDense p = (polDense)malloc(sizeof(int)*(input_length + 2));

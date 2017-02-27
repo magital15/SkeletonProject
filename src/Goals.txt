@@ -38,3 +38,22 @@ Worked on sanity check: get a polynomial, convert it to 2 distinct mod bases, re
 Vascillating between struct of structs and struct of modded arrays. Working on organizing header files with all helper methods AND rewriting methods onto GPU side. Working towards same sanity check.
 TOP PRIORITY: Reconstruct(poly, *indexOfCoefficient)
 THEN: Poly addition and multiplication
+
+2/21 Cody - Restructure of the Project
+We were in debate about how to structure the code and we have settled on using a PolyDense structure to contain the length, base, and coefficients of a certain polynomial. We will use a Poly structure to hold a number of PolyDense's so that we can easily access them and do modular arithmetic on them.
+I have created a way to just change the number of primes we are using (in the kernel.h header file), so long as that number does not exceed the length of the primeArray in the section the primeArray is initialized. We should make that list of primes at least 20 places long to be safe.
+I have initialized two Poly structures, a and b, to be test polynomials we can use to make our arithmetic work. Some of the functions I had in my mind are written out, and hopefully the code is clear enough to interpret. We need to add some of the functions in Tali's original code like the Chinese Remainder theorem, but this is a good skeleton for our skeleton project!
+
+2/22 Cody - Changes to Src - Restructured
+Added a feature in the getRemainder function to always get the positive mod of every number. This is UNINTUITIVE when taking a scalar multiple of a negative number, because members[1].coeffs through members[NUMPRIMES+1].coeffs are all positive. I believe when we do the chinese remainder theorem, it will give us all negative numbers in the members[0].coeffs. Something to keep in mind as we go forward.
+Also, changed all references to length to go into the Poly structure, rather than the PolyDense structure. This will save loads of computation time!!! Great suggestion!
+
+Things to do yet:
+1. Implement multiplication
+2. Implement Reconstruct (To get members[0] of our final output polynomial)
+3. Work on getting the S polynomial
+
+
+
+
+
