@@ -4,8 +4,10 @@
 #include "device_launch_parameters.h"
 #define TPB 32
 
-
+// Commented out because this is currently working in the main.
+/*
 #pragma region gcd / chinese remainder thm helper methods, reconstruct kernel and launcher
+
 
 // C function for extended Euclidean Algorithm
 // code authors: GeeksForGeeks
@@ -142,7 +144,7 @@ void reconstructPoly(Poly in, int* primes)
 	cudaFree(primes);
 }
 #pragma endregion 
-
+*/
 
 __device__
 int getRemainder(int coefficient, int mod)
@@ -225,7 +227,15 @@ void getMods(Poly in, int* primes)
 
 void addPolys(Poly a, Poly b, Poly c, int* primes)
 {
-	int len = a.length;
+	int len;
+	if (a.length > b.length)
+	{
+		len = a.length;
+	}
+	else
+	{
+		len = b.length;
+	}
 
 	// Declare pointers to device arrays
 	int *d_a = 0;
