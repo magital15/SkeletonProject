@@ -4,38 +4,12 @@
 #include "device_launch_parameters.h"
 #define TPB 32
 
-__global__
-
 
 #pragma region gcd / chinese remainder thm helper methods, reconstruct kernel and launcher
-// Function to find modulo inverse of a
-// PRECONDITION: a and m are coprime
-// code authors: GeeksForGeeks
-int2 modInverse(int a, int m)
-{
-	int x, y;
-	int g = gcdExtended(a, m, &x, &y);
-	if (g != 1) {
-		printf("Inverse doesn't exist for %d, %d", a, m);
-		return int2{ 0, 0 };
-	}
-	else
-	{
-		// m is added to handle negative x
-		int res = (x%m + m) % m;
-		//printf("%d * %d = 1 (mod %d)\n", a, res, m);
-		//printf("So %d is the multiplicative inverse of %d (mod %d)\n", res, a, m);
-
-		int otherRes = (y%a + a) % a;
-		//printf("%d * %d = 1 (mod %d)\n", m, otherRes, a);
-		//printf("So %d is the multiplicative inverse of %d (mod %d)\n", otherRes, m, a);
-
-		return int2{ res, otherRes };
-	}
-}
 
 // C function for extended Euclidean Algorithm
 // code authors: GeeksForGeeks
+__device__
 int gcdExtended(int a, int b, int *x, int *y)
 {
 	// Base Case
@@ -56,8 +30,36 @@ int gcdExtended(int a, int b, int *x, int *y)
 	return gcd;
 }
 
+// Function to find modulo inverse of a
+// PRECONDITION: a and m are coprime
+// code authors: GeeksForGeeks
 __device__
-int reconstruct(Poly *a, int col, int *primeArray) {
+int2 modInverse(int a, int m)
+{
+	int x, y;
+	int g = gcdExtended(a, m, &x, &y);
+	if (g != 1) {
+		printf("Inverse doesn't exist for %d, %d", a, m);
+		return int2{ 0, 0 };
+	}
+	else
+	{
+		// m is added to handle negative x
+		int res = (x%m + m) % m;
+		int otherRes = (y%a + a) % a;
+		
+
+		//printf("%d * %d = 1 (mod %d)\n", a, res, m);
+		//printf("So %d is the multiplicative inverse of %d (mod %d)\n", res, a, m);
+		//printf("%d * %d = 1 (mod %d)\n", m, otherRes, a);
+		//printf("So %d is the multiplicative inverse of %d (mod %d)\n", otherRes, m, a);
+
+		return int2{ res, otherRes };
+	}
+}
+
+__device__
+int reconstruct(Poly a, int col, int *primeArray) {
 
 	int nextMember = 1;
 	int nextPrime = 0;
@@ -95,7 +97,7 @@ int reconstruct(Poly *a, int col, int *primeArray) {
 	return a12;
 }
 
-void reconstructKernel(Poly *a, int *primes, int size)
+void reconstructKernel(Poly a, int *primes, int size)
 {
 	const int i = blockIdx.x*blockDim.x + threadIdx.x;
 	if (i >= size) return;
@@ -108,11 +110,15 @@ void reconstructPoly(Poly in, int* primes)
 
 	// Declare pointers to device arrays
 	int *d_in = 0;
-	int *primes = 0;
+	int *d_primes = 0;
 
 	//Allocate memory for device arrays
 	cudaMalloc(&d_in, len*sizeof(int));
-	cudaMalloc(&primes, NUMPRIMES*sizeof(int));
+	cudaMalloc(&d_primes, NUMPRIMES*sizeof(int));
+
+	cudaMemcpy(d_primes, primes, NUMPRIMES*sizeof(int),cudaMemcpyHostToDevice);
+	
+	// HOW TO ACTUALLY MOVE ALL DATA OVER?
 
 	// Do this for all polys in Polyset
 	for (int i = 1; i < NUMPRIMES + 1; i++) {
@@ -124,7 +130,7 @@ void reconstructPoly(Poly in, int* primes)
 	//paralelize by coefficient number
 	for (int i = 0; i < len; i++) {
 		// Launch kernel to compute and store modded polynomial values
-		reconstructKernel << <(len + TPB - 1) / TPB, TPB >> >(d_in, primes);
+		reconstructKernel <<<(len + TPB - 1) / TPB, TPB >> >(d_in, primes, NUMPRIMES);
 	}
 	
 	// Copy results from device to host
