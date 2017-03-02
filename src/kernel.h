@@ -16,7 +16,7 @@ typedef struct Poly_t {
 void getMods(Poly p, int* primes);
 void addPolys(Poly a, Poly b, Poly c, int* primes);
 void scalarMultPoly(Poly a, Poly c, int scalar, int* primes);
-void subtractPolys(Poly a, Poly b, Poly c, int* primeArray);
-void reconstructPoly(Poly in, int* primes);
+void subtractPolys(Poly a, Poly b, Poly c, int* primes);
+//void reconstructPoly(Poly in, int* primes);
 
 #endif
