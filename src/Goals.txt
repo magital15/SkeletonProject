@@ -53,6 +53,16 @@ Things to do yet:
 2. Implement Reconstruct (To get members[0] of our final output polynomial)
 3. Work on getting the S polynomial
 
+3/1 Cody - Update on current affairs
+1. We need to adjust these functions to be able to do arithmetic on different length polynomials. Example: a + b = c when a and b are different lengths. Question becomes, when b memory is allocated after its length, what values are we retrieving? If it is unknown, we need to check for the end of length b or a, whichever is shorter. Then, we need to make the arithmetic complete.
+2. GCD extended is completely recursive, and we cannot do that on the gpu because each thread needs to know every step while it is calculating, and information being sent back and forth will be pretty difficult to manage. Unified memory will not ease this situation.
+3. Multiplication with polynomial mods is the first instance where length is really, really important. Need to be careful with this.
+
+Fixed Arithmetic with different lengths. For now just allocating memory to Polynomials A and B as a.length + b.length because the longest we'll need access to is a.length + b.length -1 for the multiplication polynomial.
+
+Tried implementing a GCD extended to precalculate values for us on the cpu when the primes array is initialized. Found out there seems to be an error in the algorithm whenever we try to test integers > 7000. Try to figure out why, and correct the algorithm.
+
+
 
 
 
