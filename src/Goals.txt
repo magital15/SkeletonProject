@@ -69,8 +69,8 @@ I've created a way for double size multiplication that gives correct answers. Fo
 
 Turns out these values are not being found probably because of b/a rounding off when it is converted to an integer and back. I'm pretty sure at least... I even went to do floor() and ceil() functions to try and get the double point precision to stay, but it did nothing to help the program. These functions are unreliable because rounding up values that are integer is not good, and rounding down negative integers is bad too. Lots of issues, emailing Storti now.
 
+Turns out moving most of the functions to positive mods instead of any mods makes our effective range larger, but it cannot calculate negative output coefficients.
 Just updated the src to reflect changes to multiply, subtract, and reconstruct. ~10:37 p.m.
-
 
 
 
