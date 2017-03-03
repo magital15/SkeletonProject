@@ -62,7 +62,12 @@ Fixed Arithmetic with different lengths. For now just allocating memory to Polyn
 
 Tried implementing a GCD extended to precalculate values for us on the cpu when the primes array is initialized. Found out there seems to be an error in the algorithm whenever we try to test integers > 7000. Try to figure out why, and correct the algorithm.
 
+3/2 Cody - Encountering problems
+Found out why the values over 7000 don't get found, and it is because some of the values in the intermediate calculations in the algorithm get much bigger than integers. I will try moving necessary values to double size.
 
+I've created a way for double size multiplication that gives correct answers. For some reason there are values that cannot be found easily. You can try out the double version for yourself under src - double version.
+
+Turns out these values are not being found probably because of b/a rounding off when it is converted to an integer and back. I'm pretty sure at least... I even went to do floor() and ceil() functions to try and get the double point precision to stay, but it did nothing to help the program. These functions are unreliable because rounding up values that are integer is not good, and rounding down negative integers is bad too. Lots of issues, emailing Storti now.
 
 
 
