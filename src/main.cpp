@@ -11,19 +11,24 @@ bool testGetMods = false;
 bool testAddMods = false;
 bool testScalarMods = false;
 bool testSubtractMods = false;
-bool testMultInverse = true;
+bool testMultInverse = false;
 bool testMultiplyMods = false;
 bool testReconstruct = true;
 
 
 void primeSetter(int* primeHolder) {
-    int primes[] = {31, 29, 23, 19, 17, 13, 11, 7, 5, 3, 2};
+    int primes[] = {31, 29, 23, 19, 17, 13, 11, 7, 5, 3, 2}; 
 	for (int i = 0; i < NUMPRIMES; i++)
 	{
 		primeHolder[i] = primes[i];
 	}
 }
 
+//																	//
+//##################################################################//
+//																	//																	//
+//						Reconstruction Section						//
+//																	//
 int gcdExtended(int a, int b, int *x, int *y) {
 
 	// Base Case
@@ -40,7 +45,7 @@ int gcdExtended(int a, int b, int *x, int *y) {
 	// Update x and y using results of recursive call
 	*x = y1 - (b / a) * x1;
 	*y = x1;
-
+//	printf("*x is: %i\n*y is: %i\n", y1 - (b / a) * x1, x1);
 	return gcd;
 }
 
@@ -68,8 +73,8 @@ void multiplicativeInverse(int* primes, int *k1, int *k2) {
 		}
 		else
 		{
-			int res = (x % prime2[i] + prime2[i]) % prime2[i];
-			int otherRes = (y % prime1[i] + prime1[i]) % prime1[i];
+			int res = x % prime2[i];
+			int otherRes = y % prime1[i];
 			k1[i] = res;
 			k2[i] = otherRes;
 		}
@@ -104,7 +109,10 @@ int reconstruct(int *coeffColumn, int *primes, int *k1, int *k2) {
 	return a12;
 }
 
-int main()
+//																	//
+// ################################################################ //
+//							MAIN FUNCTION							//
+int main() 
 {
 // ################################################################ //
 // 				Notation:	1 + 2x + 3x^2 = [1, 2, 3]				//
@@ -193,7 +201,7 @@ int main()
 	scalarMultPoly(a, d, -2, primeArray);
 //	scalarMultPoly(a, a, -2, primeArray);	// ALSO WORKS
 
-//  a - b = e	--TESTING--
+//  a - b = e	--WORKS--
 
 	Poly e;
 	if (a.length > b.length)
@@ -220,19 +228,13 @@ int main()
 		f.members[i].coeffs = (int*)calloc(f.length, sizeof(int));
 	}
 	multiplyPolys(a, b, f, primeArray);
-//	multiplyPolys(a, b, a, primeArray);		// DOES NOT WORK
-											// BECAUSE OF SIZE
+
+//	DOES NOT WORK BECAUSE OF SIZE
+//	multiplyPolys(a, b, a, primeArray);
+
 
 
 //  a / b = g + (remainder)	--TESTING--
-
-
-
-//																	//
-//##################################################################//
-//																	//																	//
-//						Reconstruction Section						//
-
 
 
 
@@ -330,15 +332,33 @@ int main()
 
 	if (testReconstruct == true)
 	{
-		int* coeffColumn = (int*)calloc(NUMPRIMES, sizeof(int));
-		int realAnswer = 6000;
-		for (int i = 0; i < NUMPRIMES; i++)
-		{
-			coeffColumn[i] = (realAnswer%primeArray[i] + primeArray[i]) % primeArray[i];
-			printf("coeffColumn[%i] is: %i\n", i, coeffColumn[i]);
-		}		
-		int answer = reconstruct(coeffColumn, primeArray, k1modp2, k2modp1);
-		printf("Answer for reconstruct is: %i\n", answer);
+		// Change CRTmin and CRTmax to see which values can be successfully recovered using CRT
+		int CRTmin = 1000;
+		int CRTmax = 1500;
+		int timesWrong = 0;
+		for (int j = CRTmin; j < CRTmax; j++) {
+			int* coeffColumn = (int*)calloc(NUMPRIMES, sizeof(int));
+			int realAnswer = j;
+			for (int i = 0; i < NUMPRIMES; i++)
+			{
+				coeffColumn[i] = realAnswer%primeArray[i];
+				//printf("coeffColumn[%i] is: %i\n", i, coeffColumn[i]);
+			}		
+			int answer = reconstruct(coeffColumn, primeArray, k1modp2, k2modp1);
+			if (answer == realAnswer) {
+				if (timesWrong > 0) {
+					printf("Times Wrong = %i\n", timesWrong);
+					timesWrong = 0;
+				}
+				printf("This answer was found: %i\n", answer);
+			}
+			else {
+				timesWrong++;
+			}
+		}
+		if (timesWrong > 0) {
+			printf("Times Wrong = %i\n", timesWrong);
+		}
 	}
 //																	//
 //##################################################################//
