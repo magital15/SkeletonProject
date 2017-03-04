@@ -185,6 +185,16 @@ void scalarMultMods(int* d_out, int* d_in, int scalar, int mod)
 	d_out[i] = getRemainder(x*scalar, mod);
 }
 
+// expects d_out to be large enough to hold i+monomial elements
+// not sure if works for negative scalars
+__global__
+void monomialScalarMultMods(int* d_out, int* d_in, int scalar, int monomial, int mod)
+{
+        const int i = blockIdx.x*blockDim.x + threadIdx.x;
+        const float x = d_in[i];
+        d_out[i + monomial] = getRemainder(x*scalar, mod);
+}
+
 __global__
 void minusMult(int* d_out, int* d_in, int scalar, int mod)
 {
@@ -313,7 +323,7 @@ void subtractPolys(Poly a, Poly b, Poly c, int* primes)
 
 /*
 	int len = a.length;
-
+l
 	// Declare pointers to device arrays
 	int *d_a = 0;
 	int *d_b = 0;
@@ -323,7 +333,7 @@ void subtractPolys(Poly a, Poly b, Poly c, int* primes)
 	cudaMalloc(&d_a, len*sizeof(int));
 	cudaMalloc(&d_b, len*sizeof(int));
 	cudaMalloc(&d_out, len*sizeof(int));
-
+o
 	// Do this for all polys in Polyset
 	for (int i = 1; i < NUMPRIMES+1; i++) {
 		// Copy input data from host to device
@@ -353,31 +363,34 @@ void subtractPolys(Poly a, Poly b, Poly c, int* primes)
 void multiplyPolys(Poly a, Poly b, Poly c, int* primes)
 {
 	int len = c.length;
+	Poly shorterPoly = a.length <= b.length ? a : b;
+	Poly longerPoly = a.length <= b.length ? b : a;
 
 	// Declare pointers to device arrays
 	int *d_a = 0;
 	int *d_b = 0;
 	int *d_out = 0;
+	int *d_temp = 0;
 
 	//Allocate memory for device arrays
 	cudaMalloc(&d_a, len*sizeof(int));
 	cudaMalloc(&d_b, len*sizeof(int));
 	cudaMalloc(&d_out, len*sizeof(int));
+	cudaCalloc(&d_temp, len*sizeof(int));
 
 	// Do this for all polys in Polyset
-	for (int i = 1; i < NUMPRIMES+1; i++) {
+	for (int i = 0; i < NUMPRIMES; i++) {
 		// Copy input data from host to device
-		cudaMemcpy(d_a, a.members[i].coeffs, len*sizeof(int), 
+		cudaMemcpy(d_a, longerPoly.members[i].coeffs, longerPoly.length*sizeof(int), 
 				   cudaMemcpyHostToDevice);
-		cudaMemcpy(d_b, b.members[i].coeffs, len*sizeof(int), 
+		cudaMemcpy(d_b, shorterPoly.members[i].coeffs, shorterPoly.length*sizeof(int), 
 				   cudaMemcpyHostToDevice);
-  
-		// Launch kernel to compute and store modded polynomial values
-		minusMult<<<(len + TPB - 1)/TPB, TPB>>>(d_out, d_b, -1, 
-											    primes[i-1]);
-		addMods<<<(len + TPB - 1)/TPB, TPB>>>(d_out, d_a, d_out, 
-											  primes[i-1]);
-
+  		
+		for (int j = 0; j < shorterPoly.length; j++) {
+			// Launch kernel to compute and store modded polynomial values
+			monomialScalarMultMods<<<(len+ TPB - 1)/TPB, TPB>>>(d_temp, d_a, d_b[j], j, primes[i]);
+			addMods<<<(len + TPB - 1)/TPB, TPB>>>(d_out, d_a, d_out, primes[i]);
+		}
 		// Copy results from device to host
 		cudaMemcpy(c.members[i].coeffs, d_out, len*sizeof(int), 
 				   cudaMemcpyDeviceToHost);
