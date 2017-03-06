@@ -147,7 +147,7 @@ int main()
 	}
 	for (int i = 0; i < p2len; i++)
 	{
-		b.members[0].coeffs[i] = Polynomial2[i];
+o		b.members[0].coeffs[i] = Polynomial2[i];
 	}
 // ################################################################ //
 //																	//
@@ -157,7 +157,7 @@ int main()
 	primeSetter(primeArray);
 
 	int* k1modp2 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
-	int* k2modp1 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
+p	int* k2modp1 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
 	multiplicativeInverse(primeArray, k1modp2, k2modp1);
 	
 //																	//
@@ -167,7 +167,7 @@ int main()
 	getMods(a, primeArray);
 	getMods(b, primeArray);
 //																	//
-// ################################################################ //
+ // ################################################################ //
 //																	//
 //						  Arithmetic Section						//
 //																	//
@@ -177,19 +177,18 @@ int main()
 	if (a.length > b.length)
 	{
 		c.length = a.length;
-	}
-	else
+	}	else
 	{
 		c.length = b.length;
 	}
 	for (int i = 0; i < NUMPRIMES + 1; i++)
 	{
 		c.members[i].coeffs = (int*)calloc(c.length, sizeof(int));
-	}
+,	}
 	addPolys(a, b, c, primeArray);
 //	addPolys(a, b, a, primeArray);	// ALSO WORKS
 
-
+	
 //  a * scalar = d	--WORKS--
 
 	Poly d;
@@ -221,7 +220,7 @@ int main()
 
 //  a * b = f	--TESTING--
 
-	Poly f;
+	Poly ;
 	f.length = a.length + b.length - 1;
 	for (int i = 0; i < NUMPRIMES + 1; i++)
 	{
@@ -231,6 +230,21 @@ int main()
 
 //	DOES NOT WORK BECAUSE OF SIZE
 //	multiplyPolys(a, b, a, primeArray);
+
+//  sPoly of a, b = g   --TESTING--
+        
+	Poly g;
+        g.length = a.length >= b.length ? a.length - 1 : b.length - 1;
+
+        for (int i = 0; i < NUMPRIMES + 1; i++)
+        {
+                g.members[i].coeffs = (int*)calloc(g.length, sizeof(int));
+        }
+
+        sPoly(a, b, g, primeArray);
+
+	// should work the same
+        multiplyPolys(a, b, a, primeArray);
 
 
 
