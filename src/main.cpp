@@ -12,8 +12,9 @@ bool testAddMods = false;
 bool testScalarMods = false;
 bool testSubtractMods = false;
 bool testMultInverse = false;
-bool testMultiplyMods = false;
-bool testReconstruct = true;
+bool testMultiplyMods = true;
+bool testSPoly = true;
+bool testReconstruct = false;
 
 
 void primeSetter(int* primeHolder) {
@@ -220,7 +221,7 @@ p	int* k2modp1 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
 
 //  a * b = f	--TESTING--
 
-	Poly ;
+	Poly f;
 	f.length = a.length + b.length - 1;
 	for (int i = 0; i < NUMPRIMES + 1; i++)
 	{
@@ -344,6 +345,17 @@ p	int* k2modp1 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
 		}	
 	}
 
+	if (testSPoly == true)
+	{
+		for (int j = 0; j < NUMPRIMES + 1; j++)
+		{
+			for (int i = 0; i < g.length; i++)
+			{
+				printf("g.members[%i].c[%i] is: %i\n", j, i, 
+						g.members[j].coeffs[i]);
+			}
+		}	
+	}
 	if (testReconstruct == true)
 	{
 		// Change CRTmin and CRTmax to see which values can be successfully recovered using CRT
