@@ -404,14 +404,16 @@ void multiplyPolys(Poly a, Poly b, Poly c, int* primes)
         cudaFree(d_temp);
 }
 
-
+__device__
+int2 LCM(int2 a, int2 b){
+	// by default, return the product of the two numbers and the larger of the two powers
+	return new int2 {a.x*b.x, a.y >= b.y ? a.y : b.y)};
+}
 
 void sPoly(Poly a, Poly b, Poly c, int* primes)
 {
 	int len = c.length; // should be 1 less than longerPoly.length
-	//Poly shorterPoly = a.length <= b.length ? a : b;
-	//Poly longerPoly = a.length <= b.length ? b : a;
-
+	
 	// Declare pointers to device arrays
 	int *d_a = 0;
 	int *d_b = 0;
@@ -449,7 +451,8 @@ void sPoly(Poly a, Poly b, Poly c, int* primes)
 		monomialScalarMultMods<<<(len + TPB - 1)/TPB, TPB>>>(d_tempB, d_b, bScalar, bMonomial, primes[i]);
 				
 		// return a-b 
-		scalarMultMods<<<(len + TPB - 1)/TPB, TPB>>>(d_tempB, d_tempB, -1, primes[i]); // does this work, allowing negative mods??
+		// does this work, allowing negative mods??
+		scalarMultMods<<<(len + TPB - 1)/TPB, TPB>>>(d_tempB, d_tempB, -1, primes[i]); 
 		addMods<<<(len + TPB - 1)/TPB, TPB>>>(d_tempA, d_tempB, d_out, primes[i]);
 
 		// Copy results from device to host
@@ -461,5 +464,6 @@ void sPoly(Poly a, Poly b, Poly c, int* primes)
 	cudaFree(d_a);
 	cudaFree(d_b);
 	cudaFree(d_out);
-        cudaFree(d_temp);
+        cudaFree(d_tempA);
+	cudaFree(d_tempB);
 }
