@@ -329,7 +329,7 @@ l
 	int *d_b = 0;
 	int *d_out = 0;
 
-	//Allocate memory for device arrays
+temp	//Allocate memory for device arrays
 	cudaMalloc(&d_a, len*sizeof(int));
 	cudaMalloc(&d_b, len*sizeof(int));
 	cudaMalloc(&d_out, len*sizeof(int));
@@ -339,7 +339,7 @@ o
 		// Copy input data from host to device
 		cudaMemcpy(d_a, a.members[i].coeffs, len*sizeof(int), 
 				   cudaMemcpyHostToDevice);
-		cudaMemcpy(d_b, b.members[i].coeffs, len*sizeof(int), 
+	cudaMemcpy(d_b, b.members[i].coeffs, len*sizeof(int), 
 				   cudaMemcpyHostToDevice);
   
 		// Launch kernel to compute and store modded polynomial values
@@ -373,8 +373,9 @@ void multiplyPolys(Poly a, Poly b, Poly c, int* primes)
 	int *d_temp = 0;
 
 	//Allocate memory for device arrays
-	cudaMalloc(&d_a, len*sizeof(int));
-	cudaMalloc(&d_b, len*sizeof(int));
+
+	cudaMalloc(&d_a, longerPoly.length*sizeof(int));
+	cudaMalloc(&d_b, shorterPoly.length*sizeof(int));
 	cudaMalloc(&d_out, len*sizeof(int));
 	cudaCalloc(&d_temp, len*sizeof(int));
 
@@ -389,7 +390,7 @@ void multiplyPolys(Poly a, Poly b, Poly c, int* primes)
 		for (int j = 0; j < shorterPoly.length; j++) {
 			// Launch kernel to compute and store modded polynomial values
 			monomialScalarMultMods<<<(len+ TPB - 1)/TPB, TPB>>>(d_temp, d_a, d_b[j], j, primes[i]);
-			addMods<<<(len + TPB - 1)/TPB, TPB>>>(d_out, d_a, d_out, primes[i]);
+			addMods<<<(len + TPB - 1)/TPB, TPB>>>(d_out, d_temp, d_out, primes[i]);
 		}
 		// Copy results from device to host
 		cudaMemcpy(c.members[i].coeffs, d_out, len*sizeof(int), 
@@ -400,4 +401,65 @@ void multiplyPolys(Poly a, Poly b, Poly c, int* primes)
 	cudaFree(d_a);
 	cudaFree(d_b);
 	cudaFree(d_out);
+        cudaFree(d_temp);
+}
+
+
+
+void sPoly(Poly a, Poly b, Poly c, int* primes)
+{
+	int len = c.length; // should be 1 less than longerPoly.length
+	//Poly shorterPoly = a.length <= b.length ? a : b;
+	//Poly longerPoly = a.length <= b.length ? b : a;
+
+	// Declare pointers to device arrays
+	int *d_a = 0;
+	int *d_b = 0;
+	int *d_out = 0;
+	int *d_tempA = 0;
+	int *d_tempB = 0;
+
+	//Allocate memory for device arrays
+	cudaMalloc(&d_a, a.length*sizeof(int));
+	cudaMalloc(&d_b, b.length*sizeof(int));
+	cudaMalloc(&d_out, len*sizeof(int));
+	cudaCalloc(&d_tempA, len*sizeof(int));
+	cudaCalloc(&d_tempB, len*sizeof(int));
+
+	// Do this for all polys in Polyset
+	for (int i = 0; i < NUMPRIMES; i++) {
+		// Copy input data from host to device
+		cudaMemcpy(d_a, a.members[i].coeffs, a.length*sizeof(int), 
+				   cudaMemcpyHostToDevice);
+		cudaMemcpy(d_b, b.members[i].coeffs, b.length*sizeof(int), 
+				   cudaMemcpyHostToDevice);
+  		
+		// find LCM of highest power monomial in a and b.
+		int2 lastA = {a.members[i].coeffs[a.length-1], a.length-1};
+		int2 lastB = {b.members[i].coeffs[b.length-1], b.length-1};
+		int LCM = LCM(lastA, lastB);
+		
+		int aScalar = LCM.x / lastA.x;
+		int aMonomial = LCM.y - lastA.y;
+		int bScalar = LCM.x / lastB.x;
+		int bMonomial = LCM.y = lastB.y;
+		
+		// multiply both a and b by the requisite scale factor to get the last term to equal the LSM
+		monomialScalarMultMods<<<(len + TPB - 1)/TPB, TPB>>>(d_tempA, d_a, aScalar, aMonomial, primes[i]);
+		monomialScalarMultMods<<<(len + TPB - 1)/TPB, TPB>>>(d_tempB, d_b, bScalar, bMonomial, primes[i]);
+				
+		// return a-b 
+		scalarMultMods<<<(len + TPB - 1)/TPB, TPB>>>(d_tempB, d_tempB, -1, primes[i]); // does this work, allowing negative mods??
+		addMods<<<(len + TPB - 1)/TPB, TPB>>>(d_tempA, d_tempB, d_out, primes[i]);
+
+		// Copy results from device to host
+		cudaMemcpy(c.members[i].coeffs, d_out, len*sizeof(int), 
+				   cudaMemcpyDeviceToHost);
+	}
+  
+	// Free the memory allocated for device arrays
+	cudaFree(d_a);
+	cudaFree(d_b);
+	cudaFree(d_out);
+        cudaFree(d_temp);
 }
