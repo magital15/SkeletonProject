@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\Tali.LAPTOP-8TP60N7T\OneDrive\UW Sophomore\GPU\SkeletonProj\src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\Tali.LAPTOP-8TP60N7T\OneDrive\UW Sophomore\GPU\SkeletonProj\src\kernel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Tali.LAPTOP-8TP60N7T\OneDrive\UW Sophomore\GPU\SkeletonProj\src\kernel.cu" />
+    <CustomBuild Include="C:\Users\Tali.LAPTOP-8TP60N7T\OneDrive\UW Sophomore\GPU\SkeletonProj\src\CMakeLists.txt" />
+    <CustomBuild Include="C:\Users\Tali.LAPTOP-8TP60N7T\OneDrive\UW Sophomore\GPU\SkeletonProj\build_Windows\CMakeFiles\ec8e3707960e73b99e7f83da6ce40a13\skeleton_proj_intermediate_link.obj.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="C:\Users\Tali.LAPTOP-8TP60N7T\OneDrive\UW Sophomore\GPU\SkeletonProj\build_Windows\CMakeFiles\skeleton_proj.dir\$(Configuration)\skeleton_proj_generated_kernel.cu.obj">
+      <Filter>Object Files</Filter>
+    </Object>
+    <Object Include="C:\Users\Tali.LAPTOP-8TP60N7T\OneDrive\UW Sophomore\GPU\SkeletonProj\build_Windows\CMakeFiles\skeleton_proj.dir\$(Configuration)\skeleton_proj_intermediate_link.obj">
+      <Filter>Object Files</Filter>
+    </Object>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{C6945879-0890-36E7-8DEB-B49FED2EE0B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{0A8D3BB8-0355-34D1-A01C-80B384A1148C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{669C4C3B-3E12-38F5-8A41-03F64E7C11AD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object Files">
+      <UniqueIdentifier>{5BD22212-AF29-37DF-94A4-8F8D529781D0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

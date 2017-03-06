@@ -13,12 +13,11 @@ bool testScalarMods = false;
 bool testSubtractMods = false;
 bool testMultInverse = false;
 bool testMultiplyMods = true;
-bool testSPoly = true;
-bool testReconstruct = false;
+bool testSPoly = false;
 
 
 void primeSetter(int* primeHolder) {
-    int primes[] = {31, 29, 23, 19, 17, 13, 11, 7, 5, 3, 2}; 
+    int primes[] = {31, 29, 23, 19, 17, 13, 11, 7, 5, 3}; 
 	for (int i = 0; i < NUMPRIMES; i++)
 	{
 		primeHolder[i] = primes[i];
@@ -120,14 +119,14 @@ int main()
 //																	//
 //								Poly 1								//
 //																	//
-	int Polynomial1[] = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
+	int Polynomial1[] = { 1, 1 };// {10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
 	int p1len = sizeof(Polynomial1)/sizeof(*Polynomial1);
 	Poly a;
 	a.length = p1len;
 //																	//
 //								Poly 2								//
 //																	//
-	int Polynomial2[] = {11, 22, 33, 44, 55, 66, 77, 88, 99, 110};
+	int Polynomial2[] = { 1, 1 };// {11, 22, 33, 44, 55, 66, 77, 88, 99, 110};
 	int p2len = sizeof(Polynomial2)/sizeof(*Polynomial2);
 	Poly b;
 	b.length = p2len;
@@ -148,7 +147,7 @@ int main()
 	}
 	for (int i = 0; i < p2len; i++)
 	{
-o		b.members[0].coeffs[i] = Polynomial2[i];
+		b.members[0].coeffs[i] = Polynomial2[i];
 	}
 // ################################################################ //
 //																	//
@@ -157,11 +156,7 @@ o		b.members[0].coeffs[i] = Polynomial2[i];
 	int* primeArray = (int*)calloc(NUMPRIMES, sizeof(int));
 	primeSetter(primeArray);
 
-	int* k1modp2 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
-p	int* k2modp1 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
-	multiplicativeInverse(primeArray, k1modp2, k2modp1);
-	
-//																	//
+
 //																	//
 //					Getting Mods of Original Polys  	            //
 //																	//
@@ -172,81 +167,8 @@ p	int* k2modp1 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
 //																	//
 //						  Arithmetic Section						//
 //																	//
-//  a + b = c	--WORKS--
-	
-	Poly c;
-	if (a.length > b.length)
-	{
-		c.length = a.length;
-	}	else
-	{
-		c.length = b.length;
-	}
-	for (int i = 0; i < NUMPRIMES + 1; i++)
-	{
-		c.members[i].coeffs = (int*)calloc(c.length, sizeof(int));
-,	}
-	addPolys(a, b, c, primeArray);
-//	addPolys(a, b, a, primeArray);	// ALSO WORKS
 
 	
-//  a * scalar = d	--WORKS--
-
-	Poly d;
-	d.length = a.length;
-	for (int i = 0; i < NUMPRIMES + 1; i++)
-	{
-		d.members[i].coeffs = (int*)calloc(a.length, sizeof(int));
-	}
-	scalarMultPoly(a, d, -2, primeArray);
-//	scalarMultPoly(a, a, -2, primeArray);	// ALSO WORKS
-
-//  a - b = e	--WORKS--
-
-	Poly e;
-	if (a.length > b.length)
-	{
-		e.length = a.length;
-	}
-	else
-	{
-		e.length = b.length;
-	}
-	for (int i = 0; i < NUMPRIMES + 1; i++)
-	{
-		e.members[i].coeffs = (int*)calloc(e.length, sizeof(int));
-	}
-	subtractPolys(a, b, e, primeArray);
-//	subtractPolys(a, b, a, primeArray);		// PROBABLY WORKS
-
-//  a * b = f	--TESTING--
-
-	Poly f;
-	f.length = a.length + b.length - 1;
-	for (int i = 0; i < NUMPRIMES + 1; i++)
-	{
-		f.members[i].coeffs = (int*)calloc(f.length, sizeof(int));
-	}
-	multiplyPolys(a, b, f, primeArray);
-
-//	DOES NOT WORK BECAUSE OF SIZE
-//	multiplyPolys(a, b, a, primeArray);
-
-//  sPoly of a, b = g   --TESTING--
-        
-	Poly g;
-        g.length = a.length >= b.length ? a.length - 1 : b.length - 1;
-
-        for (int i = 0; i < NUMPRIMES + 1; i++)
-        {
-                g.members[i].coeffs = (int*)calloc(g.length, sizeof(int));
-        }
-
-        sPoly(a, b, g, primeArray);
-
-	// should work the same
-        multiplyPolys(a, b, a, primeArray);
-
 
 
 //  a / b = g + (remainder)	--TESTING--
@@ -289,52 +211,108 @@ p	int* k2modp1 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
 	}
 
 	if (testAddMods == true)
+	{
+		//  a + b = c	--WORKS--
+
+		Poly c;
+		if (a.length > b.length)
 		{
-			for (int j = 0; j < NUMPRIMES + 1; j++)
-			{
-				for (int i = 0; i < c.length; i++)
-				{
-					printf("c.members[%i].c[%i] is: %i\n", j, i, 
-							c.members[j].coeffs[i]);
-				}
-			}	
+			c.length = a.length;
 		}
+		else
+		{
+			c.length = b.length;
+		}
+		for (int i = 0; i < NUMPRIMES + 1; i++)
+		{
+			c.members[i].coeffs = (int*)calloc(c.length, sizeof(int));
+		}
+		addPolys(a, b, c, primeArray);
+		//	addPolys(a, b, a, primeArray);	// ALSO WORKS
+
+
+		for (int j = 0; j < NUMPRIMES + 1; j++)
+		{
+			for (int i = 0; i < c.length; i++)
+			{
+				printf("c.members[%i].c[%i] is: %i\n", j, i, 
+						c.members[j].coeffs[i]);
+			}
+		}	
+	}
 
 	if (testScalarMods == true)
+	{
+		//  a * scalar = d	--WORKS--
+
+		Poly d;
+		d.length = a.length;
+		for (int i = 0; i < NUMPRIMES + 1; i++)
 		{
-			for (int j = 0; j < NUMPRIMES + 1; j++)
-			{
-				for (int i = 0; i < d.length; i++)
-				{
-					printf("d.members[%i].c[%i] is: %i\n", j, i, 
-							d.members[j].coeffs[i]);
-				}
-			}	
+			d.members[i].coeffs = (int*)calloc(a.length, sizeof(int));
 		}
+		scalarMultPoly(a, d, -2, primeArray);
+		//	scalarMultPoly(a, a, -2, primeArray);	// ALSO WORKS
+
+		
+		for (int j = 0; j < NUMPRIMES + 1; j++)
+		{
+			for (int i = 0; i < d.length; i++)
+			{
+				printf("d.members[%i].c[%i] is: %i\n", j, i, 
+						d.members[j].coeffs[i]);
+			}
+		}	
+	}
 
 	if (testSubtractMods == true)
-		{
-			for (int j = 0; j < NUMPRIMES + 1; j++)
-			{
-				for (int i = 0; i < e.length; i++)
-				{
-					printf("e.members[%i].c[%i] is: %i\n", j, i, 
-							e.members[j].coeffs[i]);
-				}
-			}	
-		}
-
-	if (testMultInverse == true)
 	{
-		for (int i = 0; i < NUMPRIMES - 1; i++)
+		//  a - b = e	--WORKS--
+
+		Poly e;
+		if (a.length > b.length)
 		{
-			printf("k1modp2[%i] is: %i\n", i, k1modp2[i]);
-			printf("k2modp1[%i] is: %i\n", i, k2modp1[i]);
+			e.length = a.length;
 		}
+		else
+		{
+			e.length = b.length;
+		}
+		for (int i = 0; i < NUMPRIMES + 1; i++)
+		{
+			e.members[i].coeffs = (int*)calloc(e.length, sizeof(int));
+		}
+		subtractPolys(a, b, e, primeArray);
+		//	subtractPolys(a, b, a, primeArray);		// PROBABLY WORKS
+		
+		
+		for (int j = 0; j < NUMPRIMES + 1; j++)
+		{
+			for (int i = 0; i < e.length; i++)
+			{
+				printf("e.members[%i].c[%i] is: %i\n", j, i, 
+						e.members[j].coeffs[i]);
+			}
+		}	
 	}
+
 
 	if (testMultiplyMods == true)
 	{
+		//  a * b = f	--TESTING--
+
+		Poly f;
+		f.length = a.length + b.length - 1;
+		for (int i = 0; i < NUMPRIMES + 1; i++)
+		{
+			f.members[i].coeffs = (int*)calloc(f.length, sizeof(int));
+		}
+		multiplyPolys(a, b, f, primeArray);
+
+		//	DOES NOT WORK BECAUSE OF SIZE
+		//	multiplyPolys(a, b, a, primeArray);
+
+		
 		for (int j = 0; j < NUMPRIMES + 1; j++)
 		{
 			for (int i = 0; i < f.length; i++)
@@ -347,6 +325,22 @@ p	int* k2modp1 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
 
 	if (testSPoly == true)
 	{
+		//  sPoly of a, b = g   --TESTING--
+
+		Poly g;
+		g.length = a.length >= b.length ? a.length - 1 : b.length - 1;
+
+		for (int i = 0; i < NUMPRIMES + 1; i++)
+		{
+			g.members[i].coeffs = (int*)calloc(g.length, sizeof(int));
+		}
+
+		sPoly(a, b, g, primeArray);
+
+		// should work the same
+		sPoly(a, b, a, primeArray);
+
+		
 		for (int j = 0; j < NUMPRIMES + 1; j++)
 		{
 			for (int i = 0; i < g.length; i++)
@@ -356,36 +350,7 @@ p	int* k2modp1 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
 			}
 		}	
 	}
-	if (testReconstruct == true)
-	{
-		// Change CRTmin and CRTmax to see which values can be successfully recovered using CRT
-		int CRTmin = 1000;
-		int CRTmax = 1500;
-		int timesWrong = 0;
-		for (int j = CRTmin; j < CRTmax; j++) {
-			int* coeffColumn = (int*)calloc(NUMPRIMES, sizeof(int));
-			int realAnswer = j;
-			for (int i = 0; i < NUMPRIMES; i++)
-			{
-				coeffColumn[i] = realAnswer%primeArray[i];
-				//printf("coeffColumn[%i] is: %i\n", i, coeffColumn[i]);
-			}		
-			int answer = reconstruct(coeffColumn, primeArray, k1modp2, k2modp1);
-			if (answer == realAnswer) {
-				if (timesWrong > 0) {
-					printf("Times Wrong = %i\n", timesWrong);
-					timesWrong = 0;
-				}
-				printf("This answer was found: %i\n", answer);
-			}
-			else {
-				timesWrong++;
-			}
-		}
-		if (timesWrong > 0) {
-			printf("Times Wrong = %i\n", timesWrong);
-		}
-	}
+	
 //																	//
 //##################################################################//
 

@@ -19,6 +19,6 @@ void scalarMultPoly(Poly a, Poly c, int scalar, int* primes);
 void subtractPolys(Poly a, Poly b, Poly c, int* primes);
 void multiplyPolys(Poly a, Poly b, Poly c, int* primes);
 void sPoly(Poly a, Poly b, Poly c, int* primes);
-//void reconstructPoly(Poly in, int* primes);
+
 
 #endif
