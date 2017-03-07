@@ -7,14 +7,14 @@
 
 bool testPrime = false;
 bool testPolyDense = false;
-bool testGetModsA = true;
+bool testGetModsA = false;
 bool testGetModsB = false;
 bool testAddMods = false;
 bool testScalarMods = false;
 bool testSubtractMods = false;
 bool testMultInverse = false;
 bool testMultiplyMods = false;
-bool testSPoly = false;
+bool testSPoly = true;
 
 
 // Setting Primes with new Initializers.cu
@@ -75,9 +75,10 @@ int main()
 	{
 		for (int j = 0; j < NUMPRIMES + 1; j++)
 		{
+			
 			for (int i = 0; i < a.length; i++)
 			{
-				printf("mod%d a.members[%i].c[%i] is: %i\n", j>0 ? primes[j] : 0, j, i,
+				printf("mod%d a.members[%i].c[%i] is: %i\n", j>0 ? primes[j-1] : 0, j, i,
 						a.members[j].coeffs[i]);
 			}
 		}	
@@ -114,12 +115,12 @@ int main()
 		addPolys(a, b, c, primeArray);
 //		addPolys(a, b, a, primeArray);	// ALSO WORKS
 
-		for (int j = 1; j <= NUMPRIMES; j++)
+		for (int j = 0; j < NUMPRIMES; j++)
 		{
 			for (int i = 0; i < c.length; i++)
 			{
-				printf("mod%d c.members[%i].c[%i] is: %i\n", primeArray[j], j, i, 
-						c.members[j].coeffs[i]);
+				printf("mod%d c.members[%i].c[%i] is: %i\n", primeArray[j], j+1, i, 
+						c.members[j+1].coeffs[i]);
 			}
 		}	
 	}
@@ -210,11 +211,13 @@ int main()
 		sPoly(a, b, g, primeArray);
 
 		// should work the same
-		sPoly(a, b, a, primeArray);
+		//sPoly(a, b, a, primeArray);
 
-		
+		printf("------------------\n");
+
 		for (int j = 0; j < NUMPRIMES + 1; j++)
 		{
+			if (j != 0) printf("mod%d \n", primes[j]);
 			for (int i = 0; i < g.length; i++)
 			{
 				printf("g.members[%i].c[%i] is: %i\n", j, i, 

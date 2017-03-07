@@ -83,6 +83,8 @@ void getMods(Poly in, int* primes)
 
 	// Do this for all polys in Polyset
 	for (int i = 1; i <= NUMPRIMES; i++) {
+		cudaMemset(d_out, 0, len*sizeof(int));
+
 		// Copy input data from host to device
 		cudaMemcpy(d_in, in.members[0].coeffs, len*sizeof(int), 
 				   cudaMemcpyHostToDevice);
@@ -103,15 +105,7 @@ void getMods(Poly in, int* primes)
 
 void addPolys(Poly a, Poly b, Poly c, int* primes)
 {
-	int len;
-	if (a.length > b.length)
-	{
-		len = a.length;
-	}
-	else
-	{
-		len = b.length;
-	}
+	int len = a.length > b.length ? a.length : b.length;
 
 	// Declare pointers to device arrays
 	int *d_a = 0;
@@ -124,7 +118,7 @@ void addPolys(Poly a, Poly b, Poly c, int* primes)
 	cudaMalloc(&d_out, len*sizeof(int));
 
 	// Do this for all polys in Polyset
-	for (int i = 1; i < NUMPRIMES+1; i++) {
+	for (int i = 1; i <= NUMPRIMES; i++) {
 		// Copy input data from host to device
 		cudaMemcpy(d_a, a.members[i].coeffs, len*sizeof(int), 
 				   cudaMemcpyHostToDevice);
@@ -134,8 +128,6 @@ void addPolys(Poly a, Poly b, Poly c, int* primes)
 		// Launch kernel to compute and store modded polynomial values
 		addMods<<<(len + TPB - 1)/TPB, TPB>>>(d_out, d_a, d_b, 
 											  primes[i-1], len);
-
-		// reconstruct answer
 
 		// Copy results from device to host
 		cudaMemcpy(c.members[i].coeffs, d_out, len*sizeof(int), 
