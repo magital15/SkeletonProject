@@ -1,0 +1,353 @@
+//																	//
+//##################################################################//
+//																	//																	//
+//						Reconstruction Section						//
+//																	//
+int gcdExtended(int a, int b, int *x, int *y) {
+
+	// Base Case
+	if (a == 0)
+	{
+		*x = 0, *y = 1;
+		return b;
+	}
+
+	int x1, y1; // To store results of recursive call
+	
+	int gcd = gcdExtended(b%a, a, &x1, &y1);
+
+	// Update x and y using results of recursive call
+	*x = y1 - (b / a) * x1;
+	*y = x1;
+//	printf("*x is: %i\n*y is: %i\n", y1 - (b / a) * x1, x1);
+	return gcd;
+}
+
+void multiplicativeInverse(int* primes, int *k1, int *k2) {
+	
+	int* prime1 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
+	int* prime2 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
+
+	prime1[0] = primes[0];
+	prime2[0] = primes[1];
+	
+	for (int i = 0; i < NUMPRIMES - 1; i++)
+	{
+		if (i != 0)
+		{
+			prime1[i] = prime1[i-1] * primes[i];
+			prime2[i] = primes[i+1];
+		}
+
+		int x, y;
+	 	int g = gcdExtended(prime1[i], prime2[i], &x, &y);
+		if (g != 1) {
+			k1[i] = 0;
+			k2[i] = 0;
+		}
+		else
+		{
+			int res = x % prime2[i];
+			int otherRes = y % prime1[i];
+			k1[i] = res;
+			k2[i] = otherRes;
+		}
+	}
+	free(prime1);
+	free(prime2);
+}
+
+int reconstruct(int *coeffColumn, int *primes, int *k1, int *k2) {
+	int a1 = coeffColumn[0];
+	int a2 = coeffColumn[1];
+	int p1 = primes[0];
+	int p2 = primes[1];
+	int a12 = 0;
+	int prevAnswer = -1;
+	
+	int counter = 0;
+	while (counter < NUMPRIMES - 1 && a12 != prevAnswer) {
+		if (counter != 0) {
+			a1 = a12;
+			a2 = coeffColumn[counter + 1];
+			p1 = p1*p2;
+			p2 = primes[counter + 1];
+		}
+
+		prevAnswer = a12;
+		a12 = (a2*k1[counter]*p1 + a1*k2[counter]*p2) % (p1*p2);
+
+		counter++;
+	}
+
+	return a12;
+}
+
+
+int k1modp2 = (int*)calloc(numprimes - 1, sizeof(int));
+int k2modp1 = (int*)calloc(numprimes - 1, sizeof(int));
+multiplicativeinverse(primearray, k1modp2, k2modp1);
+
+
+
+if (testReconstruct == true)
+{
+// Change CRTmin and CRTmax to see which values can be successfully recovered using CRT
+int CRTmin = 1000;
+int CRTmax = 1500;
+int timesWrong = 0;
+for (int j = CRTmin; j < CRTmax; j++) {
+int* coeffColumn = (int*)calloc(NUMPRIMES, sizeof(int));
+int realAnswer = j;
+for (int i = 0; i < NUMPRIMES; i++)
+{
+coeffColumn[i] = realAnswer%primeArray[i];
+//printf("coeffColumn[%i] is: %i\n", i, coeffColumn[i]);
+}
+int answer = reconstruct(coeffColumn, primeArray, k1modp2, k2modp1);
+if (answer == realAnswer) {
+if (timesWrong > 0) {
+printf("Times Wrong = %i\n", timesWrong);
+timesWrong = 0;
+}
+printf("This answer was found: %i\n", answer);
+}
+else {
+timesWrong++;
+}
+}
+if (timesWrong > 0) {
+printf("Times Wrong = %i\n", timesWrong);
+}
+}
+
+
+
+###################### Kernel Version ##########################################
+// Commented out because this is currently working in the main.
+/*
+#pragma region gcd / chinese remainder thm helper methods, reconstruct kernel and launcher
+
+
+// C function for extended Euclidean Algorithm
+// code authors: GeeksForGeeks
+__device__
+int gcdExtended(int a, int b, int *x, int *y)
+{
+	// Base Case
+	if (a == 0)
+	{
+		*x = 0, *y = 1;
+		return b;
+	}
+
+	int x1, y1; // To store results of recursive call
+	int gcd = gcdExtended(b%a, a, &x1, &y1);
+
+	// Update x and y using results of recursive
+	// call
+	*x = y1 - (b / a) * x1;
+	*y = x1;
+
+	return gcd;
+}
+
+// Function to find modulo inverse of a
+// PRECONDITION: a and m are coprime
+// code authors: GeeksForGeeks
+__device__
+int2 modInverse(int a, int m)
+{
+	int x, y;
+	int g = gcdExtended(a, m, &x, &y);
+	if (g != 1) {
+		printf("Inverse doesn't exist for %d, %d", a, m);
+		return int2{ 0, 0 };
+	}
+	else
+	{
+		// m is added to handle negative x
+		int res = (x%m + m) % m;
+		int otherRes = (y%a + a) % a;
+		
+
+		//printf("%d * %d = 1 (mod %d)\n", a, res, m);
+		//printf("So %d is the multiplicative inverse of %d (mod %d)\n", res, a, m);
+		//printf("%d * %d = 1 (mod %d)\n", m, otherRes, a);
+		//printf("So %d is the multiplicative inverse of %d (mod %d)\n", otherRes, m, a);
+
+		return int2{ res, otherRes };
+	}
+}
+
+__device__
+int reconstruct(Poly a, int col, int *primeArray) {
+
+	int nextMember = 1;
+	int nextPrime = 0;
+
+	int a1 = a.members[nextMember++].coeffs[col];
+	int a2 = a.members[nextMember].coeffs[col];
+
+	int p1 = primeArray[nextPrime++];
+	int p2 = primeArray[nextPrime];
+
+	int a12 = 0;
+	int prevAnswer = -1;
+
+	while (nextPrime < NUMPRIMES && a12 != prevAnswer) {
+
+		// only enter this on iterations beyond the first one
+		if (nextPrime != 1) {
+			a1 = a12;
+			a2 = a.members[nextMember].coeffs[col];
+			p1 = p1*p2;
+			p2 = primeArray[nextPrime];
+		}
+
+		int2 multiplicativeInverses = modInverse(p1, p2);
+		int k1modp2 = multiplicativeInverses.x;
+		int k2modp1 = multiplicativeInverses.y;
+
+		prevAnswer = a12;
+		a12 = (a2*k1modp2*p1 + a1*k2modp1*p2) % (p1*p2);
+
+		nextMember++;
+		nextPrime++;
+	}
+
+	return a12;
+}
+
+void reconstructKernel(Poly a, int *primes, int size)
+{
+	const int i = blockIdx.x*blockDim.x + threadIdx.x;
+	if (i >= size) return;
+	a.members[0].coeffs[i] = reconstruct(a, i, primes); // POINTER ERROR
+}
+
+void reconstructPoly(Poly in, int* primes)
+{
+	int len = in.length;
+
+	// Declare pointers to device arrays
+	int *d_in = 0;
+	int *d_primes = 0;
+
+	//Allocate memory for device arrays
+	cudaMalloc(&d_in, len*sizeof(int));
+	cudaMalloc(&d_primes, NUMPRIMES*sizeof(int));
+
+	cudaMemcpy(d_primes, primes, NUMPRIMES*sizeof(int),cudaMemcpyHostToDevice);
+	
+	// HOW TO ACTUALLY MOVE ALL DATA OVER?
+
+	// Do this for all polys in Polyset
+	for (int i = 1; i < NUMPRIMES + 1; i++) {
+		// Copy input data from host to device
+		cudaMemcpy(d_in, in.members[i].coeffs, len*sizeof(int),
+			cudaMemcpyHostToDevice);
+	}
+
+	//paralelize by coefficient number
+	for (int i = 0; i < len; i++) {
+		// Launch kernel to compute and store modded polynomial values
+		reconstructKernel <<<(len + TPB - 1) / TPB, TPB >> >(d_in, primes, NUMPRIMES);
+	}
+	
+	// Copy results from device to host
+	cudaMemcpy(in.members[0].coeffs, d_in, len*sizeof(int),	cudaMemcpyDeviceToHost);
+	
+
+	// Free the memory allocated for device arrays
+	cudaFree(d_in);
+	cudaFree(primes);
+}
+#pragma endregion 
+*/
+
+########### CPU PRECALCULATE K1, K2 ###################
+//																	//
+//##################################################################//
+//																	//																	//
+//						Reconstruction Section						//
+//																	//
+int gcdExtended(int a, int b, int *x, int *y) {
+
+	// Base Case
+	if (a == 0)
+	{
+		*x = 0, *y = 1;
+		return b;
+	}
+
+	int x1, y1; // To store results of recursive call
+	
+	int gcd = gcdExtended(b%a, a, &x1, &y1);
+
+	// Update x and y using results of recursive call
+	*x = y1 - (b / a) * x1;
+	*y = x1;
+//	printf("*x is: %i\n*y is: %i\n", y1 - (b / a) * x1, x1);
+	return gcd;
+}
+
+void multiplicativeInverse(int* primes, int *k1, int *k2) {
+	
+	int* prime1 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
+	int* prime2 = (int*)calloc(NUMPRIMES - 1, sizeof(int));
+
+	prime1[0] = primes[0];
+	prime2[0] = primes[1];
+	
+	for (int i = 0; i < NUMPRIMES - 1; i++)
+	{
+		if (i != 0)
+		{
+			prime1[i] = prime1[i-1] * primes[i];
+			prime2[i] = primes[i+1];
+		}
+
+		int x, y;
+	 	int g = gcdExtended(prime1[i], prime2[i], &x, &y);
+		if (g != 1) {
+			k1[i] = 0;
+			k2[i] = 0;
+		}
+		else
+		{
+			int res = x % prime2[i];
+			int otherRes = y % prime1[i];
+			k1[i] = res;
+			k2[i] = otherRes;
+		}
+	}
+	free(prime1);
+	free(prime2);
+}
+
+int reconstruct(int *coeffColumn, int *primes, int *k1, int *k2) {
+	int a1 = coeffColumn[0];
+	int a2 = coeffColumn[1];
+	int p1 = primes[0];
+	int p2 = primes[1];
+	int a12 = 0;
+	int prevAnswer = -1;
+	
+	int counter = 0;
+	while (counter < NUMPRIMES - 1 && a12 != prevAnswer) {
+		if (counter != 0) {
+			a1 = a12;
+			a2 = coeffColumn[counter + 1];
+			p1 = p1*p2;
+			p2 = primes[counter + 1];
+		}
+
+		prevAnswer = a12;
+		a12 = (a2*k1[counter]*p1 + a1*k2[counter]*p2) % (p1*p2);
+
+		counter++;
+	}
+
+	return a12;
+}
