@@ -26,5 +26,6 @@ Poly makeNewPoly(int coeffArray[], int len, int primes[]);
 Poly makeAddPoly(Poly a, Poly b);
 Poly makeScalarPoly(Poly a);
 Poly makeMultiplyPoly(Poly a, Poly b);
+Poly copyIntoBigger(Poly a, int len);
 
 #endif
