@@ -48,6 +48,7 @@ Poly makeAddPoly(Poly a, Poly b)
 	Poly result;
 	
 	// Choose the right length for adding and subtracting
+	result.length = a.length <= b.length ? a.length : b.length;
 	result.length = a.length <= b.length ? b.length : a.length;	
 
 	// Allocate memory based on the length found

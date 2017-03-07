@@ -81,9 +81,7 @@ void getMods(Poly in, int* primes)
 	cudaMalloc(&d_out, len*sizeof(int));
 
 	// Do this for all polys in Polyset
-	for (int i = 1; i <= NUMPRIMES; i++) {
-		cudaMemset(d_out, 0, len*sizeof(int));
-
+	for (int i = 1; i < NUMPRIMES+1; i++) {
 		// Copy input data from host to device
 		cudaMemcpy(d_in, in.members[0].coeffs, len*sizeof(int), 
 				   cudaMemcpyHostToDevice);
@@ -120,6 +118,7 @@ void addPolys(Poly a, Poly b, Poly c, int* primes)
 		a = copyIntoBigger(a, b.length);
 	}
 	
+
 	// Declare pointers to device arrays
 	int *d_a = 0;
 	int *d_b = 0;
@@ -131,7 +130,7 @@ void addPolys(Poly a, Poly b, Poly c, int* primes)
 	cudaMalloc(&d_out, len*sizeof(int));
 
 	// Do this for all polys in Polyset
-	for (int i = 1; i <= NUMPRIMES; i++) {
+	for (int i = 1; i < NUMPRIMES+1; i++) {
 		// Copy input data from host to device
 		cudaMemcpy(d_a, a.members[i].coeffs, len*sizeof(int), 
 				   cudaMemcpyHostToDevice);
@@ -141,6 +140,8 @@ void addPolys(Poly a, Poly b, Poly c, int* primes)
 		// Launch kernel to compute and store modded polynomial values
 		addMods<<<(len + TPB - 1)/TPB, TPB>>>(d_out, d_a, d_b, 
 											  primes[i-1], len);
+
+		// reconstruct answer
 
 		// Copy results from device to host
 		cudaMemcpy(c.members[i].coeffs, d_out, len*sizeof(int), 
@@ -228,8 +229,8 @@ void multiplyPolys(Poly a, Poly b, Poly c, int* primes)
 			cudaMemset(d_temp, 0, len*sizeof(int));
 
 			// Launch kernel to compute and store modded polynomial values
-			monomialScalarMultMods<<<(len + TPB - 1) / TPB, TPB>>>(d_temp, d_a, shorterPoly.members[i].coeffs[j], j, primes[i], longerPoly.length);
-			addMods << <(len + TPB - 1) / TPB, TPB >> >(d_out, d_temp, d_out, primes[i], longerPoly.length);
+			monomialScalarMultMods<<<(len + TPB - 1) / TPB, TPB>>>(d_temp, d_a, shorterPoly.members[i].coeffs[j], j, primes[i-1], longerPoly.length);
+			addMods << <(len + TPB - 1) / TPB, TPB >> >(d_out, d_temp, d_out, primes[i-1], len);
 		}
 		// Copy results from device to host
 		cudaMemcpy(c.members[i].coeffs, d_out, len*sizeof(int), 
@@ -242,6 +243,7 @@ void multiplyPolys(Poly a, Poly b, Poly c, int* primes)
 	cudaFree(d_out);
     cudaFree(d_temp);
 }
+
 
 int2 LCM(int2 a, int2 b){
 	// by default, return the product of the two numbers and the larger of the two powers
