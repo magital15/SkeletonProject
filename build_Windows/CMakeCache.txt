@@ -98,7 +98,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELEASE:STRING=/INCREMENTAL:NO
 CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO:STRING=/debug /INCREMENTAL
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=skeleton_proj
+CMAKE_PROJECT_NAME:STATIC=SkeletonProj
 
 //RC compiler
 CMAKE_RC_COMPILER:FILEPATH=rc
@@ -411,7 +411,7 @@ CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 CUDA_64_BIT_DEVICE_CODE-ADVANCED:INTERNAL=1
 //List of intermediate files that are part of the cuda dependency
 // scanning.
-CUDA_ADDITIONAL_CLEAN_FILES:INTERNAL=C:/Users/Tali.LAPTOP-8TP60N7T/OneDrive/UW Sophomore/GPU/SkeletonProj/build_Windows/CMakeFiles/dist_v1_cuda.dir//dist_v1_cuda_generated_kernel.cu.obj.depend;C:/Users/Tali.LAPTOP-8TP60N7T/OneDrive/UW Sophomore/GPU/SkeletonProj/build_Windows/CMakeFiles/SkeletonProj.dir//SkeletonProj_generated_kernel.cu.obj.depend;C:/Users/Tali.LAPTOP-8TP60N7T/OneDrive/UW Sophomore/GPU/SkeletonProj/build_Windows/CMakeFiles/skeleton_proj.dir//skeleton_proj_generated_kernel.cu.obj.depend
+CUDA_ADDITIONAL_CLEAN_FILES:INTERNAL=C:/Users/Tali.LAPTOP-8TP60N7T/OneDrive/UW Sophomore/GPU/SkeletonProj/build_Windows/CMakeFiles/dist_v1_cuda.dir//dist_v1_cuda_generated_kernel.cu.obj.depend;C:/Users/Tali.LAPTOP-8TP60N7T/OneDrive/UW Sophomore/GPU/SkeletonProj/build_Windows/CMakeFiles/SkeletonProj.dir//SkeletonProj_generated_kernel.cu.obj.depend;C:/Users/Tali.LAPTOP-8TP60N7T/OneDrive/UW Sophomore/GPU/SkeletonProj/build_Windows/CMakeFiles/skeleton_proj.dir//skeleton_proj_generated_kernel.cu.obj.depend;C:/Users/Tali.LAPTOP-8TP60N7T/OneDrive/UW Sophomore/GPU/SkeletonProj/build_Windows/CMakeFiles/SkeletonProj.dir//SkeletonProj_generated_initializers.cu.obj.depend
 //ADVANCED property for variable: CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE
 CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CUDA_BUILD_CUBIN

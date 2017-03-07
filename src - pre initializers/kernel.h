@@ -20,11 +20,5 @@ void subtractPolys(Poly a, Poly b, Poly c, int* primes);
 void multiplyPolys(Poly a, Poly b, Poly c, int* primes);
 void sPoly(Poly a, Poly b, Poly c, int* primes);
 
-// Initializer wrapper functions
-int* setPrimes(int primes[]);
-Poly makeNewPoly(int coeffArray[], int len, int primes[]);
-Poly makeAddPoly(Poly a, Poly b);
-Poly makeScalarPoly(Poly a);
-Poly makeMultiplyPoly(Poly a, Poly b);
 
 #endif

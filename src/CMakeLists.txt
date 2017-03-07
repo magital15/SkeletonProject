@@ -26,8 +26,8 @@
 cmake_minimum_required(VERSION 2.8)
 
 # Set the name of your project. Change the next two lines to match your current project name.
-project(skeleton_proj)
-set(EXE_NAME skeleton_proj)
+project(SkeletonProj)
+set(EXE_NAME SkeletonProj)
 
 ## Some compilation options you may want to change
 set(CUDA_COMPUTE_CAPABILITY "20") 
