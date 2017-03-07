@@ -13,8 +13,8 @@ bool testAddMods = false;
 bool testScalarMods = false;
 bool testSubtractMods = false;
 bool testMultInverse = false;
-bool testMultiplyMods = true;
-bool testSPoly = false;
+bool testMultiplyMods = false;
+bool testSPoly = true;
 
 
 // Setting Primes with new Initializers.cu
@@ -29,14 +29,14 @@ int main()
 //																	//
 //								Poly 1								//
 //																	//
-	int Polynomial1[] = { 11, 22, 33, 44, 55 };
+	int Polynomial1[] = { 1, 1 };
 	int p1len = sizeof(Polynomial1)/sizeof(*Polynomial1);
 	Poly a = makeNewPoly(Polynomial1, p1len, primeArray);
 
 //																	//
 //								Poly 2								//
 //																	//
-	int Polynomial2[] = { 1, 1 };
+	int Polynomial2[] = { 31, 32, 33 };
 	int p2len = sizeof(Polynomial2)/sizeof(*Polynomial2);
 	Poly b = makeNewPoly(Polynomial2, p2len, primeArray);
 //																	//
@@ -155,11 +155,6 @@ int main()
 		//  a * b = f	--TESTING--
 		Poly f = makeMultiplyPoly(a, b);
 		multiplyPolys(a, b, f, primeArray);
-
-//		DOES NOT WORK BECAUSE OF SIZE
-//		multiplyPolys(a, b, a, primeArray);
-
-		printf("The product poly is %i long and has %lu members \n", f.length, sizeof(f.members)/sizeof(*f.members));
 
 		for (int j = 0; j <= NUMPRIMES; j++)
 		{
