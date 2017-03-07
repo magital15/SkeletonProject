@@ -197,8 +197,9 @@ void multiplyPolys(Poly a, Poly b, Poly c, int* primes)
 	int len = c.length;
 	Poly shorterPoly = a.length <= b.length ? a : b;
 	Poly longerPoly = a.length <= b.length ? b : a;
-
-	shorterPoly = copyIntoBigger(shorterPoly, longerPoly.length);
+	
+	shorterPoly = copyIntoBigger(shorterPoly, len);
+	longerPoly = copyIntoBigger(longerPoly, len);
 	
 	// Declare pointers to device arrays
 	int *d_a = 0;
