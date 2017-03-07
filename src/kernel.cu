@@ -239,10 +239,10 @@ void multiplyPolys(Poly a, Poly b, Poly c, int* primes)
     cudaFree(d_temp);
 }
 
-void LCM(int2 a, int2 b, int2 c){
+int2 LCM(int2 a, int2 b){
 	// by default, return the product of the two numbers and the larger of the two powers
-	c = {a.x*b.x, a.y >= b.y ? a.y : b.y};
-	
+	int2 c = {a.x*b.x, a.y >= b.y ? a.y : b.y};
+	return c;
 }
 
 void sPoly(Poly a, Poly b, Poly c, int* primes)
@@ -276,8 +276,8 @@ void sPoly(Poly a, Poly b, Poly c, int* primes)
 		// find LCM of highest power monomial in a and b.
 		int2 lastA = {a.members[i].coeffs[a.length-1], a.length-1};
 		int2 lastB = {b.members[i].coeffs[b.length-1], b.length-1};
-		int2 lcm = { 0, 0 };
-		LCM(lastA, lastB, lcm);
+		int2 lcm = LCM(lastA, lastB);
+		
 		
 		int aScalar = lcm.x / lastA.x;
 		int aMonomial = lcm.y - lastA.y;
@@ -305,4 +305,3 @@ void sPoly(Poly a, Poly b, Poly c, int* primes)
         cudaFree(d_tempA);
 	cudaFree(d_tempB);
 }
-

@@ -159,7 +159,7 @@ int main()
 //		DOES NOT WORK BECAUSE OF SIZE
 //		multiplyPolys(a, b, a, primeArray);
 
-		printf("the product poly if %i long and has %m members \n", f.length, sizeof(f.members));
+		printf("the product poly if %i long and has %d members \n", f.length, sizeof(f.members)/sizeof(*f.members));
 
 		for (int j = 1; j <= NUMPRIMES; j++)
 		{
