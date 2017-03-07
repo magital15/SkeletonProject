@@ -183,7 +183,6 @@ int main()
 //		DOES NOT WORK BECAUSE OF SIZE
 //		multiplyPolys(a, b, a, primeArray);
 
-
 		printf("------------------");
 		for (int j = 1; j <= NUMPRIMES; j++)
 		{
