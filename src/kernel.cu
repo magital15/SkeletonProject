@@ -19,9 +19,10 @@ int getMult(int a, int b)
 }
 
 __global__
-void takeMod(int* d_out, int* d_in, int mod)
+void takeMod(int* d_out, int* d_in, int mod, int size)
 {
 	const int i = blockIdx.x*blockDim.x + threadIdx.x;
+	if (i > size) return;
 	const float x = d_in[i];
 	d_out[i] = getRemainder(x, mod);
 }
@@ -35,7 +36,7 @@ void addMods(int* d_out, int* d_a, int* d_b, int mod, int size)
     const float y = d_b[i];
 	d_out[i] = getRemainder(x + y, mod);
 
-	//printf("d_out[%d] = %d \n", i, d_out[i]);
+	printf("mod%d d_out[%d] = %d \n", mod, i, d_out[i]);
 }
 
 __global__
@@ -57,7 +58,7 @@ void monomialScalarMultMods(int* d_out, int* d_in, int scalar, int monomial, int
         const float x = d_in[i];
         d_out[i + monomial] = getRemainder(x*scalar, mod);
 		
-		//printf("d_temp[%d] = %d \n", i, d_out[i]);
+		printf("mod%d d_temp[%d] = %d \n", mod, i, d_out[i]);
 }
 
 __global__
@@ -81,14 +82,14 @@ void getMods(Poly in, int* primes)
 	cudaMalloc(&d_out, len*sizeof(int));
 
 	// Do this for all polys in Polyset
-	for (int i = 1; i < NUMPRIMES+1; i++) {
+	for (int i = 1; i <= NUMPRIMES; i++) {
 		// Copy input data from host to device
 		cudaMemcpy(d_in, in.members[0].coeffs, len*sizeof(int), 
 				   cudaMemcpyHostToDevice);
   
 		// Launch kernel to compute and store modded polynomial values
 		takeMod<<<(len + TPB - 1)/TPB, TPB>>>(d_out, d_in, 
-											  primes[i-1]);
+											  primes[i-1], len);
 
 		// Copy results from device to host
 		cudaMemcpy(in.members[i].coeffs, d_out, len*sizeof(int), 
