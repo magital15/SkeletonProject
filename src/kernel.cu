@@ -19,10 +19,9 @@ int getMult(int a, int b)
 }
 
 __global__
-void takeMod(int* d_out, int* d_in, int mod, int size)
+void takeMod(int* d_out, int* d_in, int mod)
 {
 	const int i = blockIdx.x*blockDim.x + threadIdx.x;
-	if (i > size) return;
 	const float x = d_in[i];
 	d_out[i] = getRemainder(x, mod);
 }
@@ -36,7 +35,7 @@ void addMods(int* d_out, int* d_a, int* d_b, int mod, int size)
     const float y = d_b[i];
 	d_out[i] = getRemainder(x + y, mod);
 
-	printf("mod%d d_out[%d] = %d \n", mod, i, d_out[i]);
+	//printf("d_out[%d] = %d \n", i, d_out[i]);
 }
 
 __global__
@@ -58,7 +57,7 @@ void monomialScalarMultMods(int* d_out, int* d_in, int scalar, int monomial, int
         const float x = d_in[i];
         d_out[i + monomial] = getRemainder(x*scalar, mod);
 		
-		printf("mod%d d_temp[%d] = %d \n", mod, i, d_out[i]);
+		//printf("d_temp[%d] = %d \n", i, d_out[i]);
 }
 
 __global__
@@ -91,7 +90,7 @@ void getMods(Poly in, int* primes)
   
 		// Launch kernel to compute and store modded polynomial values
 		takeMod<<<(len + TPB - 1)/TPB, TPB>>>(d_out, d_in, 
-											  primes[i-1], len);
+											  primes[i-1]);
 
 		// Copy results from device to host
 		cudaMemcpy(in.members[i].coeffs, d_out, len*sizeof(int), 
@@ -105,8 +104,22 @@ void getMods(Poly in, int* primes)
 
 void addPolys(Poly a, Poly b, Poly c, int* primes)
 {
-	int len = a.length > b.length ? a.length : b.length;
-
+	int len;
+	if (a.length > b.length)
+	{
+		len = a.length;
+		b = copyIntoBigger(b, a.length);
+	}
+	else if (a.length == b.length)
+	{
+		len = a.length;
+	}
+	else
+	{
+		len = b.length;
+		a = copyIntoBigger(a, b.length);
+	}
+	
 	// Declare pointers to device arrays
 	int *d_a = 0;
 	int *d_b = 0;
@@ -208,16 +221,14 @@ void multiplyPolys(Poly a, Poly b, Poly c, int* primes)
 		cudaMemset(d_out, 0, len*sizeof(int));
 
 		// Copy input data from host to device
-		cudaMemcpy(d_a, longerPoly.members[i].coeffs, longerPoly.length*sizeof(int), 
-				   cudaMemcpyHostToDevice);
-		cudaMemcpy(d_b, shorterPoly.members[i].coeffs, shorterPoly.length*sizeof(int), 
-				   cudaMemcpyHostToDevice);
+		cudaMemcpy(d_a, longerPoly.members[i].coeffs, longerPoly.length*sizeof(int), cudaMemcpyHostToDevice);
+		cudaMemcpy(d_b, shorterPoly.members[i].coeffs, shorterPoly.length*sizeof(int), cudaMemcpyHostToDevice);
   		
 		for (int j = 0; j < shorterPoly.length; j++) {
 			cudaMemset(d_temp, 0, len*sizeof(int));
 
 			// Launch kernel to compute and store modded polynomial values
-			monomialScalarMultMods << <(len + TPB - 1) / TPB, TPB >> >(d_temp, d_a, shorterPoly.members[i].coeffs[j], j, primes[i], longerPoly.length);
+			monomialScalarMultMods<<<(len + TPB - 1) / TPB, TPB>>>(d_temp, d_a, shorterPoly.members[i].coeffs[j], j, primes[i], longerPoly.length);
 			addMods << <(len + TPB - 1) / TPB, TPB >> >(d_out, d_temp, d_out, primes[i], longerPoly.length);
 		}
 		// Copy results from device to host

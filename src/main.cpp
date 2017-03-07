@@ -9,16 +9,16 @@ bool testPrime = false;
 bool testPolyDense = false;
 bool testGetModsA = false;
 bool testGetModsB = false;
-bool testAddMods = false;
+bool testAddMods = true;
 bool testScalarMods = false;
 bool testSubtractMods = false;
 bool testMultInverse = false;
-bool testMultiplyMods = false;
-bool testSPoly = true;
+bool testMultiplyMods = true;
+bool testSPoly = false;
 
 
 // Setting Primes with new Initializers.cu
-int primes[] = {23, 19, 29, 17, 13, 11, 7, 5, 3}; 
+int primes[] = {23, 19, 31, 29, 17, 13, 11, 7, 5, 3}; 
 int* primeArray = setPrimes(primes);
 
 
@@ -29,7 +29,7 @@ int main()
 //																	//
 //								Poly 1								//
 //																	//
-	int Polynomial1[] = { 31, 32, 33 };
+	int Polynomial1[] = { 11, 22, 33, 44, 55 };
 	int p1len = sizeof(Polynomial1)/sizeof(*Polynomial1);
 	Poly a = makeNewPoly(Polynomial1, p1len, primeArray);
 
@@ -79,6 +79,7 @@ int main()
 			for (int i = 0; i < a.length; i++)
 			{
 				printf("mod%d a.members[%i].c[%i] is: %i\n", j>0 ? primes[j-1] : 0, j, i,
+				printf("a.members[%i].c[%i] is: %i\n", j, i, 
 						a.members[j].coeffs[i]);
 			}
 		}	
@@ -99,17 +100,6 @@ int main()
 	if (testAddMods == true)
 	{
 		//  a + b = c	--WORKS--
-		for (int i = 0; i < a.length; i++)
-		{
-			printf("%i,", a.members[0].coeffs[i]);
-		}
-		printf("\n");
-
-		for (int i = 0; i < b.length; i++)
-		{
-			printf("%i,", b.members[0].coeffs[i]);
-		}
-		printf("\n");
 
 		Poly c = makeAddPoly(a, b);
 		addPolys(a, b, c, primeArray);
@@ -166,26 +156,14 @@ int main()
 	{
 		//  a * b = f	--TESTING--
 		Poly f = makeMultiplyPoly(a, b);
-		for (int i = 0; i < a.length; i++)
-		{
-			printf("%i,", a.members[0].coeffs[i]);
-		}
-		printf("\n");
-
-		for (int i = 0; i < b.length; i++)
-		{
-			printf("%i,", b.members[0].coeffs[i]);
-		}
-		printf("\n");
-
-
 		multiplyPolys(a, b, f, primeArray);
 
 //		DOES NOT WORK BECAUSE OF SIZE
 //		multiplyPolys(a, b, a, primeArray);
 
-		printf("------------------");
-		for (int j = 1; j <= NUMPRIMES; j++)
+		printf("the product poly if %i long and has %d members \n", f.length, sizeof(f.members)/sizeof(*f.members));
+
+		for (int j = 0; j <= NUMPRIMES; j++)
 		{
 			printf("p%d f.members[%i] is: ", primeArray[j-1], j);
 			for (int i = 0; i < f.length; i++)

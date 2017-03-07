@@ -92,3 +92,24 @@ Poly makeMultiplyPoly(Poly a, Poly b)
 
 	return result;
 }
+
+Poly copyIntoBigger(Poly a, int len)
+{
+	// Create a Poly to store data into
+	Poly result;
+
+	// Give the result the required length
+	result.length  = len;
+
+	// Copy the original data into the new poly
+	for (int i = 0; i < NUMPRIMES + 1; i++)
+	{
+		result.members[i].coeffs = (int*)calloc(result.length, sizeof(int));
+		for (int j = 0; j < a.length; j++)
+		{
+			result.members[i].coeffs[j] = a.members[i].coeffs[j];
+		}
+	}
+
+	return result;
+}
