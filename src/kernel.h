@@ -23,9 +23,11 @@ void sPoly(Poly a, Poly b, Poly c, int* primes);
 // Initializer wrapper functions
 int* setPrimes(int primes[]);
 Poly makeNewPoly(int coeffArray[], int len, int primes[]);
+Poly makePolyGivenLength(int length);
 Poly makeAddPoly(Poly a, Poly b);
 Poly makeScalarPoly(Poly a);
 Poly makeMultiplyPoly(Poly a, Poly b);
+Poly makeSPoly(Poly a, Poly b);
 Poly copyIntoBigger(Poly a, int len);
 
 #endif

@@ -41,15 +41,11 @@ Poly makeNewPoly(int coeffArray[], int len, int primes[])
 	return result;
 }
 
-// This function initializes a polynomial that will be added or subtracted
-Poly makeAddPoly(Poly a, Poly b)
-{
+Poly makePolyGivenLength(int length) {
 	// Create a Poly to store data into
 	Poly result;
-	
-	// Choose the right length for adding and subtracting
-	result.length = a.length <= b.length ? a.length : b.length;
-	result.length = a.length <= b.length ? b.length : a.length;	
+
+	result.length = length;
 
 	// Allocate memory based on the length found
 	for (int i = 0; i < NUMPRIMES + 1; i++)
@@ -62,36 +58,30 @@ Poly makeAddPoly(Poly a, Poly b)
 
 Poly makeScalarPoly(Poly a)
 {
-	// Create a Poly to store data into
-	Poly result;
-
-	// Choose the same length as the input polynomial
-	result.length = a.length;
-
-	// Allocate memory based on the length found
-	for (int i = 0; i < NUMPRIMES + 1; i++)
-	{
-		result.members[i].coeffs = (int*)calloc(result.length, sizeof(int));
-	}
-
-	return result;
+	int length = a.length;
+	return makePolyGivenLength(length);
 }
 
+// This function initializes a polynomial that will be added or subtracted
+// initializes the memory for a poly of length max(length of a, length of b)
+Poly makeAddPoly(Poly a, Poly b)
+{
+	int length = a.length >= b.length ? a.length : b.length;
+	return makePolyGivenLength(length);
+}
+
+// initializes the memory for a poly of length one less than the product of lengths of a, b
 Poly makeMultiplyPoly(Poly a, Poly b)
 {
-	// Create a Poly to store data into
-	Poly result;
+	int length = a.length + b.length - 1;
+	return makePolyGivenLength(length);
+}
 
-	// Choose the right length for adding and subtracting
-	result.length = a.length + b.length - 1;
-
-	// Allocate memory based on the length found
-	for (int i = 0; i < NUMPRIMES + 1; i++)
-	{
-		result.members[i].coeffs = (int*)calloc(result.length, sizeof(int));
-	}
-
-	return result;
+// initializes the memory for a poly with length one less than the max length of a, b
+Poly makeSPoly(Poly a, Poly b)
+{
+	int length = a.length >= b.length ? a.length - 1 : b.length - 1;
+	return makePolyGivenLength(length);
 }
 
 Poly copyIntoBigger(Poly a, int len)

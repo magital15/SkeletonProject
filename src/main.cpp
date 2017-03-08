@@ -171,18 +171,11 @@ int main()
 	{
 		//  sPoly of a, b = g   --TESTING--
 
-		Poly g;
-		g.length = a.length >= b.length ? a.length - 1 : b.length - 1;
-
-		for (int i = 0; i < NUMPRIMES + 1; i++)
-		{
-			g.members[i].coeffs = (int*)calloc(g.length, sizeof(int));
-		}
-
+		Poly g = makeSPoly(a, b);
 		sPoly(a, b, g, primeArray);
 
 		// should work the same
-		sPoly(a, b, a, primeArray);
+		// sPoly(a, b, a, primeArray);
 
 		
 		for (int j = 0; j < NUMPRIMES + 1; j++)
