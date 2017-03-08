@@ -35,16 +35,18 @@ void addMods(int* d_out, int* d_a, int* d_b, int mod, int size)
     const float y = d_b[i];
 	d_out[i] = getRemainder(x + y, mod);
 
-	//printf("d_out[%d] = %d \n", i, d_out[i]);
+	//printf("adding d_out[%d] = %d \n", i, d_out[i]);
 }
 
 __global__
 void scalarMultMods(int* d_out, int* d_in, int scalar, int mod, int size)
 {
 	const int i = blockIdx.x*blockDim.x + threadIdx.x;
-	if (i > size) return;
+	if (i >= size) return;
 	const float x = d_in[i];
 	d_out[i] = getRemainder(x*scalar, mod);
+
+	//printf("negative [%d] = %d \n", i, d_out[i]);
 }
 
 // expects d_out to be large enough to hold i+monomial elements
@@ -53,11 +55,11 @@ __global__
 void monomialScalarMultMods(int* d_out, int* d_in, int scalar, int monomial, int mod, int size)
 {
         const int i = blockIdx.x*blockDim.x + threadIdx.x;
-		if (i > size) return;
+		if (i >= size) return;
         const float x = d_in[i];
         d_out[i + monomial] = getRemainder(x*scalar, mod);
 		
-		printf("scaled [%d] = %d \n", i, d_out[i]);
+		//printf("scaled [%d] = %d \n", i, d_out[i]);
 }
 
 __global__
@@ -66,6 +68,9 @@ void minusMult(int* d_out, int* d_in, int scalar, int mod)
 	const int i = blockIdx.x*blockDim.x + threadIdx.x;
 	const float x = d_in[i];
 	d_out[i] = getMult(x, scalar);
+
+
+	//printf("negative [%d] = %d \n", i, d_out[i]);
 }
 
 void getMods(Poly in, int* primes)
@@ -254,12 +259,6 @@ int2 LCM(int2 a, int2 b){
 
 void sPoly(Poly a, Poly b, Poly c, int* primes)
 {
-	/*	copies everything back to CPU before running the second kernel launcher
-		scalarMultPoly(b, c, -1, primes); 
-			>>> EXCEPT HERE WE HAVE TO MULTIPLY BOTH A AND B BY SOMETHING FANCY, and multiply b by -1 in the end
-		addPolys(a, c, c, primes);
-		*/
-
 	int len = c.length; // should be 1 less than longerPoly.length
 	
 	// Declare pointers to device arrays
@@ -276,12 +275,14 @@ void sPoly(Poly a, Poly b, Poly c, int* primes)
 	cudaMalloc(&d_tempA, (len + 1)*sizeof(int));
 	cudaMalloc(&d_tempB, (len + 1)*sizeof(int));
 	
-	cudaMemset(d_out, 0, len*sizeof(int));
-	cudaMemset(d_tempA, 0, (len + 1)*sizeof(int));
-	cudaMemset(d_tempB, 0, (len + 1)*sizeof(int));
-	
 	// Do this for all polys in Polyset
-	for (int i = 1; i <= 1/*NUMPRIMES*/; i++) {
+	for (int i = 1; i <= NUMPRIMES; i++) {
+		cudaMemset(d_a, 0, (len + 1)*sizeof(int));
+		cudaMemset(d_b, 0, (len + 1)*sizeof(int));
+		cudaMemset(d_out, 0, len*sizeof(int));
+		cudaMemset(d_tempA, 0, (len + 1)*sizeof(int));
+		cudaMemset(d_tempB, 0, (len + 1)*sizeof(int));
+
 		// Copy input data from host to device
 		cudaMemcpy(d_a, a.members[i].coeffs, a.length*sizeof(int), 
 				   cudaMemcpyHostToDevice);
@@ -293,41 +294,34 @@ void sPoly(Poly a, Poly b, Poly c, int* primes)
 		int2 lastB = {b.members[i].coeffs[b.length-1], b.length-1};
 		int2 lcm = LCM(lastA, lastB);
 
-		printf("\n-------------------");
+		int aScalar = lcm.x / lastA.x;
+		int aMonomial = lcm.y - lastA.y;
+		int bScalar = lcm.x / lastB.x;
+		int bMonomial = lcm.y - lastB.y;
+		/*
+		printf("\n-------------------\n");
 		printf("A has highest number %dx^%d and B has highest number %dx^%d \n", lastA.x, lastA.y, lastB.x, lastB.y);
 		printf("So their LCM is %dx^%d \n", lcm.x, lcm.y);
 		
-		
-		int aScalar = lcm.x / lastA.x;
+		printf("\nlenth of a %d\n", a.length);
+		printf("lenth of b %d\n\n", b.length);
+
+
 		printf("aScalar: %d\n", aScalar);
-		int aMonomial = lcm.y - lastA.y;
 		printf("aMonomial: %d\n", aMonomial);
-		int bScalar = lcm.x / lastB.x;
 		printf("bScalar: %d\n", bScalar);
-		int bMonomial = lcm.y - lastB.y;
 		printf("bMonomial: %d\n", bMonomial);
+		*/
+
+		int currPrime = primes[i - 1];
 
 		// multiply both a and b by the requisite scale factor to get the last term to equal the LSM
-		monomialScalarMultMods<<<(len + TPB - 1)/TPB, TPB>>>(d_tempA, d_a, aScalar, aMonomial, primes[i], a.length);
-		monomialScalarMultMods<<<(len + TPB - 1)/TPB, TPB>>>(d_tempB, d_b, bScalar, bMonomial, primes[i], b.length);
-
-		/*printf("Scaled p%d a.members[%i] is: ", primes[i - 1], i);
-		for (int i = 0; i < a.length; i++)
-		{
-			printf("%i,", a.members[1].coeffs[i]);
-		}
-		printf("\n");
-		printf("Scaled p%d b.members[%i] is: ", primes[i - 1], i);
-		for (int i = 0; i < b.length; i++)
-		{
-			printf("%i,", b.members[1].coeffs[i]);
-		}
-		printf("\n");*/
-				
+		monomialScalarMultMods<<<(a.length + TPB - 1)/TPB, TPB>>>(d_tempA, d_a, aScalar, aMonomial, currPrime, len+1);
+		monomialScalarMultMods << <(b.length + TPB - 1) / TPB, TPB >> >(d_tempB, d_b, bScalar, bMonomial, currPrime, len + 1);
+						
 		// return a-b 
-		// does this work, allowing negative mods??
-		scalarMultMods<<<(len + TPB - 1)/TPB, TPB>>>(d_tempB, d_tempB, -1, primes[i], a.length); 
-		addMods<<<(len + TPB - 1)/TPB, TPB>>>(d_tempA, d_tempB, d_out, primes[i], len);
+		scalarMultMods << <(len + TPB - 1) / TPB, TPB >> >(d_tempB, d_tempB, -1, currPrime, len);
+		addMods << <(len + TPB - 1) / TPB, TPB >> >(d_out, d_tempB, d_tempA, currPrime, len);
 
 		// Copy results from device to host
 		cudaMemcpy(c.members[i].coeffs, d_out, len*sizeof(int), 

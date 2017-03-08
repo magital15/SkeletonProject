@@ -21,6 +21,25 @@ bool testSPoly = true;
 int primes[] = {31, 29, 23, 19, 17, 13, 11, 7, 5, 3}; 
 int* primeArray = setPrimes(primes);
 
+void printForReconstruction(Poly g) {
+	printf("mp = {");
+	for (int j = 1; j <= NUMPRIMES; j++)
+	{
+		printf("{%d, ", primeArray[j - 1]);
+		for (int i = 0; i < g.length - 1; i++)
+		{
+			printf("%i,", g.members[j].coeffs[i]);
+		}
+		printf("%i}", g.members[j].coeffs[g.length - 1]);
+		if (j != NUMPRIMES)
+			printf(",");
+		else
+			printf("};");
+		printf("\n");
+	}
+}
+
+
 
 int main() 
 {
@@ -36,7 +55,7 @@ int main()
 //																	//
 //								Poly 2								//
 //																	//
-	int Polynomial2[] = { 31, 32, 33 };
+	int Polynomial2[] = { -301, -302, 303, 11, 12, 15, 71, 234, -1000 };
 	int p2len = sizeof(Polynomial2)/sizeof(*Polynomial2);
 	Poly b = makeNewPoly(Polynomial2, p2len, primeArray);
 //																	//
@@ -176,18 +195,23 @@ int main()
 
 		// should work the same
 		// sPoly(a, b, a, primeArray);
-
 		
-		for (int j = 0; j < NUMPRIMES + 1; j++)
+		printf("Letting A-B be: ");
+		for (int i = 0; i < a.length-1; i++)
 		{
-			for (int i = 0; i < g.length; i++)
-			{
-				printf("g.members[%i].c[%i] is: %i\n", j, i, 
-						g.members[j].coeffs[i]);
-			}
-		}	
-	}
+			printf("%ix^%i + ", a.members[0].coeffs[i], i);
+		}
+		printf("%ix^%i \n", a.members[0].coeffs[a.length-1], a.length-1);
+		printf("Letting B be: ");
+		for (int i = 0; i < b.length-1; i++)
+		{
+			printf("%ix^%i + ", b.members[0].coeffs[i], i);
+		}
+		printf("%ix^%i \n", b.members[0].coeffs[b.length - 1], b.length - 1);
 
+		printForReconstruction(g);
+		
+	}
 
 //																	//
 //##################################################################//
