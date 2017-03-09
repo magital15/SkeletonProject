@@ -1,3 +1,4 @@
+
 #ifndef KERNEL_H
 #define KERNEL_H
 #define NUMPRIMES 5 // Can only be as long as the array in Prime Setter
@@ -19,6 +20,7 @@ void scalarMultPoly(Poly a, Poly c, int scalar, int* primes);
 void subtractPolys(Poly a, Poly b, Poly c, int* primes);
 void multiplyPolys(Poly a, Poly b, Poly c, int* primes);
 void sPoly(Poly a, Poly b, Poly c, int* primes);
+void exponentiate(Poly a, Poly c, int exp, int* primes);
 
 // Initializer wrapper functions
 int* setPrimes(int primes[]);
