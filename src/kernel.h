@@ -20,7 +20,7 @@ void scalarMultPoly(Poly a, Poly c, int scalar, int* primes);
 void subtractPolys(Poly a, Poly b, Poly c, int* primes);
 void multiplyPolys(Poly a, Poly b, Poly c, int* primes);
 void sPoly(Poly a, Poly b, Poly c, int* primes);
-void exponentiate(Poly a, Poly c, int exp, int* primes);
+Poly exponentiate(Poly a, int exp, int* primes);
 
 // Initializer wrapper functions
 int* setPrimes(int primes[]);
@@ -31,5 +31,6 @@ Poly makeScalarPoly(Poly a);
 Poly makeMultiplyPoly(Poly a, Poly b);
 Poly makeSPoly(Poly a, Poly b);
 Poly copyIntoBigger(Poly a, int len);
+void printForReconstruction(Poly g, int* primeArray);
 
 #endif

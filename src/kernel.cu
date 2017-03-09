@@ -335,3 +335,15 @@ void sPoly(Poly a, Poly b, Poly c, int* primes)
     cudaFree(d_tempA);
 	cudaFree(d_tempB);
 }
+
+Poly exponentiate(Poly a, int exp, int* primeArray) {
+	int len = exp*(a.length - 1) + 1;
+	
+	Poly result = copyIntoBigger(a, len);
+	// ideally we won't have to move the intermediate results back to the CPU at each step
+
+	for(int i = 1; i < exp; i++) {
+		multiplyPolys(result, a, result, primeArray);
+	}
+	return result;
+}

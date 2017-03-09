@@ -15,51 +15,12 @@ bool testSubtractMods = false;
 bool testMultInverse = false;
 bool testMultiplyMods = false;
 bool testSPoly = true;
+bool testExpPoly = true;
 
 
 // Setting Primes with new Initializers.cu
 int primes[] = {31, 29, 23, 19, 17, 13, 11, 7, 5, 3}; 
 int* primeArray = setPrimes(primes);
-
-void printForReconstruction(Poly g) {
-	printf("mp = {");
-	for (int j = 1; j <= NUMPRIMES; j++)
-	{
-		printf("{%d, ", primeArray[j - 1]);
-		for (int i = 0; i < g.length - 1; i++)
-		{
-			printf("%i,", g.members[j].coeffs[i]);
-		}
-		printf("%i}", g.members[j].coeffs[g.length - 1]);
-		if (j != NUMPRIMES)
-			printf(",");
-		else
-			printf("};");
-		printf("\n");
-	}
-}
-
-Poly exponentiate(Poly a, int exp) {
-	int len = (a.length-1)*exp;
-	
-	Poly resEven = copyIntoBigger(a, len);
-	Poly resOdd = makePolyGivenLength(len);
-	
-	// ideally we won't have to move the intermediate results back to the CPU at each step
-	for(int i = 1; i <= exp; i++) {
-		if (i % 2 == 0) {
-			multiplyPolys(resOdd, a, resEven, primeArray); 
-		else {
-			multiplyPolys(resEven, a, resOdd, primeArray); 
-		}
-	}
-	
-	if (exp % 2 == 0) {
-		return resEven;
-	} else {
-		return resOdd;
-	}
-}
 
 int main() 
 {
@@ -112,80 +73,47 @@ int main()
 	
 	if (testGetModsA == true)
 	{
-		for (int j = 0; j < NUMPRIMES + 1; j++)
-		{
-			for (int i = 0; i < a.length; i++)
-			{
-				printf("a.members[%i].c[%i] is: %i\n", j, i, 
-						a.members[j].coeffs[i]);
-			}
-		}	
+		printf("Poly a:\n");
+		printForReconstruction(a, primeArray);
 	}
 
 	if (testGetModsB == true)
 	{
-		for (int j = 0; j < NUMPRIMES + 1; j++)
-		{
-			for (int i = 0; i < b.length; i++)
-			{
-				printf("b.members[%i].c[%i] is: %i\n", j, i, 
-						b.members[j].coeffs[i]);
-			}
-		}	
+		printf("Poly b:\n");
+		printForReconstruction(b, primeArray);
 	}
 
 	if (testAddMods == true)
 	{
 		//  a + b = c	--WORKS--
-
 		Poly c = makeAddPoly(a, b);
 		addPolys(a, b, c, primeArray);
 //		addPolys(a, b, a, primeArray);	// ALSO WORKS
 
-		for (int j = 0; j < NUMPRIMES + 1; j++)
-		{
-			for (int i = 0; i < c.length; i++)
-			{
-				printf("c.members[%i].c[%i] is: %i\n", j, i, 
-						c.members[j].coeffs[i]);
-			}
-		}	
+		printf("Poly c:\n");
+		printForReconstruction(c, primeArray);
 	}
 
 	if (testScalarMods == true)
 	{
 		//  a * scalar = d	--WORKS--
-
 		Poly d = makeScalarPoly(a);
 		scalarMultPoly(a, d, -2, primeArray);
 //		scalarMultPoly(a, a, -2, primeArray);	// ALSO WORKS
 
-		for (int j = 0; j < NUMPRIMES + 1; j++)
-		{
-			for (int i = 0; i < d.length; i++)
-			{
-				printf("d.members[%i].c[%i] is: %i\n", j, i, 
-						d.members[j].coeffs[i]);
-			}
-		}	
+		printf("Poly d:\n");
+		printForReconstruction(d, primeArray);
 	}
 
 	if (testSubtractMods == true)
 	{
 		//  a - b = e	--WORKS--
-
 		Poly e = makeAddPoly(a, b);
 		subtractPolys(a, b, e, primeArray);
 //		subtractPolys(a, b, a, primeArray);		// PROBABLY WORKS
 			
-		for (int j = 0; j < NUMPRIMES + 1; j++)
-		{
-			for (int i = 0; i < e.length; i++)
-			{
-				printf("e.members[%i].c[%i] is: %i\n", j, i, 
-						e.members[j].coeffs[i]);
-			}
-		}	
+		printf("Poly e:\n");
+		printForReconstruction(e, primeArray);	
 	}
 
 
@@ -195,27 +123,17 @@ int main()
 		Poly f = makeMultiplyPoly(a, b);
 		multiplyPolys(a, b, f, primeArray);
 
-		for (int j = 0; j <= NUMPRIMES; j++)
-		{
-			printf("p%d f.members[%i] is: ", primeArray[j-1], j);
-			for (int i = 0; i < f.length; i++)
-			{
-				printf("%i,", f.members[j].coeffs[i]);
-			}
-			printf("\n");
-		}	
+		printf("Poly f:\n");
+		printForReconstruction(f, primeArray);
 	}
 
 	if (testSPoly == true)
 	{
 		//  sPoly of a, b = g   --TESTING--
-
 		Poly g = makeSPoly(a, b);
 		sPoly(a, b, g, primeArray);
-
-		// should work the same
-		// sPoly(a, b, a, primeArray);
-		
+//		sPoly(a, b, a, primeArray);		// Should work the same
+	
 		printf("Letting A-B be: ");
 		for (int i = 0; i < a.length-1; i++)
 		{
@@ -229,8 +147,15 @@ int main()
 		}
 		printf("%ix^%i \n", b.members[0].coeffs[b.length - 1], b.length - 1);
 
-		printForReconstruction(g);
+		printForReconstruction(g, primeArray);
 		
+	}
+	
+	if (testExpPoly == true)
+	{
+		Poly h = exponentiate(a, 3, primeArray);
+		printf("Poly h:\n");
+		printForReconstruction(h, primeArray);
 	}
 
 //																	//

@@ -104,3 +104,21 @@ Poly copyIntoBigger(Poly a, int len)
 
 	return result;
 }
+
+void printForReconstruction(Poly g, int* primeArray) {
+	printf("mp = {");
+	for (int j = 1; j <= NUMPRIMES; j++)
+	{
+		printf("{%d, ", primeArray[j - 1]);
+		for (int i = 0; i < g.length - 1; i++)
+		{
+			printf("%i,", g.members[j].coeffs[i]);
+		}
+		printf("%i}", g.members[j].coeffs[g.length - 1]);
+		if (j != NUMPRIMES)
+			printf(",");
+		else
+			printf("};");
+		printf("\n");
+	}
+}
