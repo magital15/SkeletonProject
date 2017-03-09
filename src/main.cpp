@@ -39,7 +39,27 @@ void printForReconstruction(Poly g) {
 	}
 }
 
-
+Poly exponentiate(Poly a, int exp) {
+	int len = (a.length-1)*exp;
+	
+	Poly resEven = copyIntoBigger(a, len);
+	Poly resOdd = makePolyGivenLength(len);
+	
+	// ideally we won't have to move the intermediate results back to the CPU at each step
+	for(int i = 1; i <= exp; i++) {
+		if (i % 2 == 0) {
+			multiplyPolys(resOdd, a, resEven, primeArray); 
+		else {
+			multiplyPolys(resEven, a, resOdd, primeArray); 
+		}
+	}
+	
+	if (exp % 2 == 0) {
+		return resEven;
+	} else {
+		return resOdd;
+	}
+}
 
 int main() 
 {
