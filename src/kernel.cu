@@ -332,7 +332,7 @@ void sPoly(Poly a, Poly b, Poly c, int* primes)
 	cudaFree(d_a);
 	cudaFree(d_b);
 	cudaFree(d_out);
-    cudaFree(d_tempA);
+    	cudaFree(d_tempA);
 	cudaFree(d_tempB);
 }
 
@@ -346,4 +346,46 @@ Poly exponentiate(Poly a, int exp, int* primeArray) {
 		multiplyPolys(result, a, result, primeArray);
 	}
 	return result;
+}
+
+Poly exponentiate_stayOnGPUUntilEnd(Poly a, int exp, int* primeArray) {
+	int len = exp*(a.length - 1) + 1;
+	
+	Poly result = copyIntoBigger(a, len);
+	
+        // Declare pointers to device arrays
+        int *d_a = 0;
+        int *d_out = 0;
+        int *d_temp = 0;
+
+	//Allocate memory for device arrays
+        cudaMalloc(&d_a, a.length*sizeof(int));
+        cudaMalloc(&d_out, len*sizeof(int));
+        cudaMalloc(&d_temp, len*sizeof(int));
+	
+	// Do this for all polys in Polyset
+	for (int i = 1; i <= NUMPRIMES; i++) {
+		cudaMemset(d_out, 0, len*sizeof(int));
+
+		// Copy input data from host to device
+		cudaMemcpy(d_a, a.members[i].coeffs, a.length*sizeof(int), cudaMemcpyHostToDevice);
+		cudaMemset(d_temp, 0, len*sizeof(int));
+
+		for (int numExp = 1; numExp < exp; numExp++) {
+			for (int j = 0; j < a.length; j++) {
+
+				// Launch kernel to compute and store modded polynomial values
+				monomialScalarMultMods<<<(len + TPB - 1) / TPB, TPB>>>(d_temp, d_a, a.members[i].coeffs[j], j, primes[i-1], len);
+				addMods << <(len + TPB - 1) / TPB, TPB >> >(d_out, d_temp, d_out, primes[i-1], len);
+			}
+		}
+		// Copy results from device to host
+		cudaMemcpy(c.members[i].coeffs, d_out, len*sizeof(int), 
+				   cudaMemcpyDeviceToHost);
+	}
+  
+	// Free the memory allocated for device arrays
+	cudaFree(d_a);
+	cudaFree(d_out);
+    	cudaFree(d_temp);
 }
