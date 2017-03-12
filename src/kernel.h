@@ -1,7 +1,7 @@
 
 #ifndef KERNEL_H
 #define KERNEL_H
-#define NUMPRIMES 5 // Can only be as long as the array in Prime Setter
+#define NUMPRIMES 8 // Can only be as long as the array in Prime Setter
 
 typedef struct PolyDense_t {
 	int base;		// base
@@ -21,6 +21,7 @@ void subtractPolys(Poly a, Poly b, Poly c, int* primes);
 void multiplyPolys(Poly a, Poly b, Poly c, int* primes);
 void sPoly(Poly a, Poly b, Poly c, int* primes);
 Poly exponentiate(Poly a, int exp, int* primes);
+Poly exponentiate_stayOnGPUUntilEnd(Poly a, int exp, int* primes);
 
 // Initializer wrapper functions
 int* setPrimes(int primes[]);
