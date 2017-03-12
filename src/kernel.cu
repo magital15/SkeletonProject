@@ -35,7 +35,7 @@ void addMods(int* d_out, int* d_a, int* d_b, int mod, int size)
     const float y = d_b[i];
 	d_out[i] = getRemainder(x + y, mod);
 
-	//printf("adding d_out[%d] = %d \n", i, d_out[i]);
+	printf("adding d_out[%d] = %d \n", i, d_out[i]);
 }
 
 __global__
@@ -59,7 +59,7 @@ void monomialScalarMultMods(int* d_out, int* d_in, int scalar, int monomial, int
         const float x = d_in[i];
         d_out[i + monomial] = getRemainder(x*scalar, mod);
 		
-		//printf("scaled [%d] = %d \n", i, d_out[i]);
+		printf("mult [%d] = %d \n", i, d_out[i]);
 }
 
 __global__
@@ -366,17 +366,18 @@ Poly exponentiate_stayOnGPUUntilEnd(Poly a, int exp, int* primes) {
 	// Do this for all polys in Polyset
 	for (int i = 1; i <= NUMPRIMES; i++) {
 		cudaMemset(d_out, 0, len*sizeof(int));
-
+		
 		// Copy input data from host to device
 		cudaMemcpy(d_a, a.members[i].coeffs, a.length*sizeof(int), cudaMemcpyHostToDevice);
 		
-		for (int numExp = 1; numExp < exp; numExp++) {
+		for (int numExp = 0; numExp < exp - 1; numExp++) {
 			for (int j = 0; j < a.length; j++) {
 				cudaMemset(d_temp, 0, len*sizeof(int));
 
 				// Launch kernel to compute and store modded polynomial values
-				monomialScalarMultMods<<<(len + TPB - 1) / TPB, TPB>>>(d_temp, d_a, a.members[i].coeffs[j], j, primes[i-1], len);
+				monomialScalarMultMods<<<(len + TPB - 1) / TPB, TPB>>>(d_temp, d_a, a.members[i].coeffs[j], j + numExp, primes[i-1], len);
 				addMods <<<(len + TPB - 1) / TPB, TPB >>>(d_out, d_temp, d_out, primes[i-1], len);
+
 			}
 		}
 		// Copy results from device to host

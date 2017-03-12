@@ -16,7 +16,7 @@ bool testSubtractMods = false;
 bool testMultInverse = false;
 bool testMultiplyMods = false;
 bool testSPoly = false;
-bool testExpPoly = true;
+bool testExpPoly = false;
 bool testExpPolyGPU = true;
 
 
@@ -179,7 +179,7 @@ int main()
 		printForReconstruction(h, largePrimeArray);
 	}
 
-	if (testExpPolyGPU == true)
+	if (testExpPolyGPU == true) // IDK WHY NOT WORKING FOR numExp 4 and higher. offset shouldn't be required... Wat??
 	{
 		kernelBegin = clock();
 		Poly i = exponentiate_stayOnGPUUntilEnd(a, numExp, largePrimeArray);
