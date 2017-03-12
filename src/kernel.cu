@@ -348,7 +348,7 @@ Poly exponentiate(Poly a, int exp, int* primeArray) {
 	return result;
 }
 
-Poly exponentiate_stayOnGPUUntilEnd(Poly a, int exp, int* primeArray) {
+Poly exponentiate_stayOnGPUUntilEnd(Poly a, int exp, int* primes) {
 	int len = exp*(a.length - 1) + 1;
 	
 	Poly result = copyIntoBigger(a, len);
@@ -376,16 +376,18 @@ Poly exponentiate_stayOnGPUUntilEnd(Poly a, int exp, int* primeArray) {
 
 				// Launch kernel to compute and store modded polynomial values
 				monomialScalarMultMods<<<(len + TPB - 1) / TPB, TPB>>>(d_temp, d_a, a.members[i].coeffs[j], j, primes[i-1], len);
-				addMods << <(len + TPB - 1) / TPB, TPB >> >(d_out, d_temp, d_out, primes[i-1], len);
+				addMods <<<(len + TPB - 1) / TPB, TPB >>>(d_out, d_temp, d_out, primes[i-1], len);
 			}
 		}
 		// Copy results from device to host
-		cudaMemcpy(c.members[i].coeffs, d_out, len*sizeof(int), 
+		cudaMemcpy(result.members[i].coeffs, d_out, len*sizeof(int), 
 				   cudaMemcpyDeviceToHost);
 	}
   
 	// Free the memory allocated for device arrays
 	cudaFree(d_a);
 	cudaFree(d_out);
-    	cudaFree(d_temp);
+    cudaFree(d_temp);
+	
+	return result;
 }
