@@ -16,6 +16,7 @@ bool testMultInverse = false;
 bool testMultiplyMods = false;
 bool testSPoly = true;
 bool testExpPoly = true;
+bool testExpPolyGPU = true;
 
 
 // Setting Primes with new Initializers.cu
@@ -156,6 +157,13 @@ int main()
 		Poly h = exponentiate(a, 3, primeArray);
 		printf("Poly h:\n");
 		printForReconstruction(h, primeArray);
+	}
+
+	if (testExpPolyGPU == true)
+	{
+		Poly i = exponentiate(a, 3, primeArray);
+		printf("Poly i:\n");
+		printForReconstruction(i, primeArray);
 	}
 
 //																	//
