@@ -1,7 +1,6 @@
 #include "kernel.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
@@ -15,23 +14,14 @@ bool testScalarMods = false;
 bool testSubtractMods = false;
 bool testMultInverse = false;
 bool testMultiplyMods = false;
-bool testSPoly = false;
-bool testExpPoly = false;
+bool testSPoly = true;
+bool testExpPoly = true;
 bool testExpPolyGPU = true;
 
 
 // Setting Primes with new Initializers.cu
 int primes[] = {31, 29, 23, 19, 17, 13, 11, 7, 5, 3}; 
 int* primeArray = setPrimes(primes);
-
-int largePrimes[] = {
-	64951, 64969, 64997,  65003,  65011,  65027,  65029,  65033,  65053,  65063,
-	65071, 65089, 65099,  65101,  65111,  65119,  65123,  65129,  65141,  65147,
-	65167, 65171, 65173,  65179,  65183,  65203,  65213,  65239,  65257,  65267,
-	65269, 65287, 65293,  65309,  65323,  65327,  65353,  65357,  65371,  65381,
-	65393, 65407, 65413,  65419,  65423,  65437,  65447,  65449,  65479,  65497,
-	65519, 65521, 65537 };
-int* largePrimeArray = setPrimes(largePrimes);
 
 int main() 
 {
@@ -161,34 +151,19 @@ int main()
 		printForReconstruction(g, primeArray);
 		
 	}
-
-	clock_t kernelBegin;
-	clock_t kernelEnd;
-	double kernelTime;
-	int numExp = 4;
-
+	
 	if (testExpPoly == true)
 	{
-		kernelBegin = clock();
-		Poly h = exponentiate(a, numExp, largePrimeArray);
-		kernelEnd = clock();
-
-		kernelTime = ((double)(kernelEnd - kernelBegin)) / CLOCKS_PER_SEC;
-		printf("Exponention with frequent memcpy's: %f\n", kernelTime*1000.f);
-
-		printForReconstruction(h, largePrimeArray);
+		Poly h = exponentiate(b, 3, primeArray);
+		printf("Poly h:\n");
+		printForReconstruction(h, primeArray);
 	}
 
-	if (testExpPolyGPU == true) // IDK WHY NOT WORKING FOR numExp 4 and higher. offset shouldn't be required... Wat??
+	if (testExpPolyGPU == true)
 	{
-		kernelBegin = clock();
-		Poly i = exponentiate_stayOnGPUUntilEnd(a, numExp, largePrimeArray);
-		kernelEnd = clock();
-		
-		kernelTime = ((double)(kernelEnd - kernelBegin)) / CLOCKS_PER_SEC;
-		printf("Stay on GPU exponentiation: %f time\n", kernelTime*1000.f);
-		
-		printForReconstruction(i, largePrimeArray);
+		Poly i = exponentiate_stayOnGPUUntilEnd(b, 3, primeArray);
+		printf("Poly i:\n");
+		printForReconstruction(i, primeArray);
 	}
 
 //																	//

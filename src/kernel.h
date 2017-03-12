@@ -1,7 +1,7 @@
 
 #ifndef KERNEL_H
 #define KERNEL_H
-#define NUMPRIMES 3 // Can only be as long as the array in Prime Setter
+#define NUMPRIMES 5 // Can only be as long as the array in Prime Setter
 
 typedef struct PolyDense_t {
 	int base;		// base

@@ -35,7 +35,7 @@ void addMods(int* d_out, int* d_a, int* d_b, int mod, int size)
     const float y = d_b[i];
 	d_out[i] = getRemainder(x + y, mod);
 
-	printf("adding d_out[%d] = %d \n", i, d_out[i]);
+	//printf("adding d_out[%d] = %d \n", i, d_out[i]);
 }
 
 __global__
@@ -59,7 +59,7 @@ void monomialScalarMultMods(int* d_out, int* d_in, int scalar, int monomial, int
         const float x = d_in[i];
         d_out[i + monomial] = getRemainder(x*scalar, mod);
 		
-		printf("mult [%d] = %d \n", i, d_out[i]);
+		//printf("scaled [%d] = %d \n", i, d_out[i]);
 }
 
 __global__
@@ -236,7 +236,7 @@ void multiplyPolys(Poly a, Poly b, Poly c, int* primes)
 
 			// Launch kernel to compute and store modded polynomial values
 			monomialScalarMultMods<<<(len + TPB - 1) / TPB, TPB>>>(d_temp, d_a, shorterPoly.members[i].coeffs[j], j, primes[i-1], longerPoly.length);
-			addMods << <(len + TPB - 1) / TPB, TPB >> >(d_out, d_temp, d_out, primes[i-1], len);
+			addMods <<<(len + TPB - 1) / TPB, TPB>>>(d_out, d_temp, d_out, primes[i-1], len);
 		}
 		// Copy results from device to host
 		cudaMemcpy(c.members[i].coeffs, d_out, len*sizeof(int), 
@@ -320,8 +320,8 @@ void sPoly(Poly a, Poly b, Poly c, int* primes)
 		monomialScalarMultMods << <(b.length + TPB - 1) / TPB, TPB >> >(d_tempB, d_b, bScalar, bMonomial, currPrime, len + 1);
 						
 		// return a-b 
-		scalarMultMods << <(len + TPB - 1) / TPB, TPB >> >(d_tempB, d_tempB, -1, currPrime, len);
-		addMods << <(len + TPB - 1) / TPB, TPB >> >(d_out, d_tempB, d_tempA, currPrime, len);
+		scalarMultMods <<<(len + TPB - 1) / TPB, TPB >>>(d_tempB, d_tempB, -1, currPrime, len);
+		addMods <<<(len + TPB - 1) / TPB, TPB>>>(d_out, d_tempB, d_tempA, currPrime, len);
 
 		// Copy results from device to host
 		cudaMemcpy(c.members[i].coeffs, d_out, len*sizeof(int), 
@@ -340,18 +340,18 @@ Poly exponentiate(Poly a, int exp, int* primeArray) {
 	int len = exp*(a.length - 1) + 1;
 	
 	Poly result = copyIntoBigger(a, len);
-	
+	// ideally we won't have to move the intermediate results back to the CPU at each step
+
 	for(int i = 1; i < exp; i++) {
 		multiplyPolys(result, a, result, primeArray);
 	}
 	return result;
 }
 
-// exponentiation version which doesn't move intermediate results back to the CPU at each step
 Poly exponentiate_stayOnGPUUntilEnd(Poly a, int exp, int* primes) {
-	int len = exp*(a.length - 1) + 1;
+	int len = a.length + (exp - 1)*(a.length - 1);
 	
-	Poly result = copyIntoBigger(a, len);
+	Poly result = makePolyGivenLength(len);
 	
     // Declare pointers to device arrays
     int *d_a = 0;
@@ -359,26 +359,31 @@ Poly exponentiate_stayOnGPUUntilEnd(Poly a, int exp, int* primes) {
     int *d_temp = 0;
 
 //Allocate memory for device arrays
-    cudaMalloc(&d_a, a.length*sizeof(int));
+    cudaMalloc(&d_a, len*sizeof(int));		// Longer Iterative Poly
     cudaMalloc(&d_out, len*sizeof(int));
     cudaMalloc(&d_temp, len*sizeof(int));
 
 	// Do this for all polys in Polyset
 	for (int i = 1; i <= NUMPRIMES; i++) {
 		cudaMemset(d_out, 0, len*sizeof(int));
+		cudaMemset(d_a, 0, len*sizeof(int));
+		cudaMemcpy(d_a, a.members[i].coeffs, a.length*sizeof(int), cudaMemcpyHostToDevice);	// First iteration with d_a
 		
-		// Copy input data from host to device
-		cudaMemcpy(d_a, a.members[i].coeffs, a.length*sizeof(int), cudaMemcpyHostToDevice);
-		
-		for (int numExp = 0; numExp < exp - 1; numExp++) {
+		int currentLen = a.length*2 - 1;
+
+		for (int numExp = 1; numExp < exp; numExp++) {
+			
 			for (int j = 0; j < a.length; j++) {
-				cudaMemset(d_temp, 0, len*sizeof(int));
-
-				// Launch kernel to compute and store modded polynomial values
-				monomialScalarMultMods<<<(len + TPB - 1) / TPB, TPB>>>(d_temp, d_a, a.members[i].coeffs[j], j + numExp, primes[i-1], len);
-				addMods <<<(len + TPB - 1) / TPB, TPB >>>(d_out, d_temp, d_out, primes[i-1], len);
-
+				// Launch kernel to compute and store modded polynomial values			
+				cudaMemset(d_temp, 0, currentLen*sizeof(int));
+				monomialScalarMultMods<<<(len + TPB - 1) / TPB, TPB>>>(d_temp, d_a, a.members[i].coeffs[j], j, primes[i-1], currentLen - a.length + 1);
+				addMods <<<(len + TPB - 1) / TPB, TPB >>>(d_out, d_temp, d_out, primes[i-1], currentLen);
 			}
+			cudaMemcpy(d_a, d_out, len*sizeof(int), cudaMemcpyDeviceToDevice);	
+			if (numExp != exp - 1) {
+				cudaMemset(d_out, 0, len*sizeof(int));
+			}
+			currentLen += a.length - 1;
 		}
 		// Copy results from device to host
 		cudaMemcpy(result.members[i].coeffs, d_out, len*sizeof(int), 
@@ -392,3 +397,4 @@ Poly exponentiate_stayOnGPUUntilEnd(Poly a, int exp, int* primes) {
 	
 	return result;
 }
+
