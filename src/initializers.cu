@@ -1,110 +1,60 @@
 #include "kernel.h"
 #include <stdio.h>
 #include <stdlib.h>
-#define SAFETYLENGTH
 
-// Function that sets primes to reduce how much code is needed
-int* setPrimes(int primes[])
-{
+// Function that sets the primes
+int* setPrimes(int primes[]) {
 	int* result = (int*)calloc(NUMPRIMES, sizeof(int));
-	for (int i = 0; i < NUMPRIMES; i++)
-	{
+	for (int i = 0; i < NUMPRIMES; i++) {
 		result[i] = primes[i];
 	}
 	return result;
 }
 
-// This function makes original polynomials that will be used for arithmetic
-Poly makeNewPoly(int coeffArray[], int len, int primes[])
-{
-	// Create a Poly to store data into
+// Function to create an initial Poly
+Poly makeNewPoly(int coeffArray[], int len, int* primeArray) {
 	Poly result;
-	
-	// Give it the length as an input
 	result.length = len;
-
-	// Allocate memory based on the length
-	for (int i = 0; i < NUMPRIMES + 1; i++)
-	{
-		result.members[i].coeffs = (int*)calloc(result.length, sizeof(int));
+	// Allocate memory
+	for (int i = 0; i < NUMPRIMES + 1; i++) {
+		result.members[i].coeffs = (int*)calloc(len, sizeof(int));
 	}
-
-	// Copy the coeffArray[] into the new Poly in members[0]
-	for (int i = 0; i < result.length; i++)
-	{
-		result.members[0].coeffs[i] = coeffArray[i];
-	}
-
-	// Get the modular results to fill the rest of the members
-	getMods(result, primes);
+	// Copy first row of coefficients
+	result.members[0].coeffs = coeffArray;
+	// Fill the rest of the members
+	getMods(result, primeArray);
 
 	return result;
 }
 
-Poly makePolyGivenLength(int length) {
-	// Create a Poly to store data into
+// Allocates memory to a Poly with a given length
+Poly makePolyGivenLength(int len) {
 	Poly result;
-
-	result.length = length;
-
-	// Allocate memory based on the length found
+	result.length = len;
+	// Allocate memory
 	for (int i = 0; i < NUMPRIMES + 1; i++)
 	{
-		result.members[i].coeffs = (int*)calloc(result.length, sizeof(int));
+		result.members[i].coeffs = (int*)calloc(len, sizeof(int));
 	}
 
 	return result;
 }
 
-Poly makeScalarPoly(Poly a)
-{
-	int length = a.length;
-	return makePolyGivenLength(length);
-}
-
-// This function initializes a polynomial that will be added or subtracted
-// initializes the memory for a poly of length max(length of a, length of b)
-Poly makeAddPoly(Poly a, Poly b)
-{
-	int length = a.length >= b.length ? a.length : b.length;
-	return makePolyGivenLength(length);
-}
-
-// initializes the memory for a poly of length one less than the product of lengths of a, b
-Poly makeMultiplyPoly(Poly a, Poly b)
-{
-	int length = a.length + b.length - 1;
-	return makePolyGivenLength(length);
-}
-
-// initializes the memory for a poly with length one less than the max length of a, b
-Poly makeSPoly(Poly a, Poly b)
-{
-	int length = a.length >= b.length ? a.length - 1 : b.length - 1;
-	return makePolyGivenLength(length);
-}
-
-Poly copyIntoBigger(Poly a, int len)
-{
-	// Create a Poly to store data into
+// Copy's an existing Poly into a longer one
+Poly copyIntoBigger(Poly a, int len) {
 	Poly result;
-
-	// Give the result the required length
 	result.length  = len;
-
 	// Copy the original data into the new poly
 	for (int i = 0; i < NUMPRIMES + 1; i++)
 	{
-		result.members[i].coeffs = (int*)calloc(result.length, sizeof(int));
-		for (int j = 0; j < a.length; j++)
-		{
-			result.members[i].coeffs[j] = a.members[i].coeffs[j];
-		}
+		result.members[i].coeffs = (int*)calloc(len, sizeof(int));
+		memcpy(result.members[i].coeffs, a.members[i].coeffs, a.length*sizeof(int));
 	}
 
 	return result;
 }
 
+// Prints in a format that can imported to Mathematica
 void printForReconstruction(Poly g, int* primeArray) {
 	printf("mp = {");
 	for (int j = 1; j <= NUMPRIMES; j++)
