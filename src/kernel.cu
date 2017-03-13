@@ -322,3 +322,131 @@ Poly exponentiateGPU(Poly a, int exp, int* primes) {
 	
 	return result;
 }
+
+
+
+//  ###########################################################
+// I can't believe this works
+
+
+int* makeGPUPoly(Poly a) {
+	// Create Pointers to arrays on CPU and GPU
+	int* GPUresult = 0;
+	int* CPUresult = 0;
+
+	// Set length of members and total device length
+	int len = a.length;
+	int d_len = len*NUMPRIMES + 1;
+
+	// Set memory allocation for CPU and GPU results
+	CPUresult = (int*)calloc(d_len, sizeof(int));
+	cudaMalloc(&GPUresult, (d_len)*sizeof(int));
+
+	// Set the first value in device array to the length
+	CPUresult[0] = len;
+
+	int pos = 1;
+	// Copy the original data into the CPUresult
+	for (int i = 1; i < NUMPRIMES + 1; i++)
+	{
+		for (int j = 0; j < len; j++)
+		{
+			CPUresult[pos] = a.members[i].coeffs[j];
+			pos++;
+		}
+	}
+
+	// Copy the CPUresult into the GPUresult
+	cudaMemcpy(GPUresult, CPUresult, d_len*sizeof(int), cudaMemcpyHostToDevice);
+
+	free(CPUresult);
+	return GPUresult;
+}
+
+// Gets a primesArray on GPU
+int* makeGPUPrimes(int* primes) {
+	// Create Pointers to arrays on CPU and GPU
+	int* GPUresult = 0;
+
+	// Set memory allocation for CPU and GPU results
+	cudaMalloc(&GPUresult, NUMPRIMES*sizeof(int));
+
+	// Copy the primes into the GPUresult
+	cudaMemcpy(GPUresult, primes, NUMPRIMES*sizeof(int), cudaMemcpyHostToDevice);
+
+	return GPUresult;
+}
+
+Poly getGPUPoly(int* d_a) {
+	// Grab the length from the device poly
+	int* lenGrabber = (int*)calloc(1, sizeof(int));
+	cudaMemcpy(lenGrabber, d_a, sizeof(int), cudaMemcpyDeviceToHost);
+	int len = lenGrabber[0];
+	int d_len = len*NUMPRIMES + 1;
+	
+	// Make a new poly based on the length
+	Poly result = makePolyGivenLength(len);
+	
+	// Copy d_a into a CPUresult
+	// CONSIDER DOING THIS ABOVE INSTEAD OF JUST LENGRABBER
+	int* CPUresult = (int*)calloc(d_len, sizeof(int));
+	cudaMemcpy(CPUresult, d_a, d_len*sizeof(int), cudaMemcpyDeviceToHost);
+
+	int pos = 1;
+	for (int i = 1; i <= NUMPRIMES; i++) {
+		for (int j = 0; j < len; j++) {
+			result.members[i].coeffs[j] = CPUresult[pos];
+			pos++;
+		}
+	}
+
+	cudaFree(d_a);
+	return result;
+}
+
+// WORKS GREAT
+__global__
+void addMods2(int* d_out, int* d_a, int* d_b, int* primes, int len)
+{
+	const int i = blockIdx.x*blockDim.x + threadIdx.x;
+	if (i == 0)	{
+		d_out[i] = len;
+		return;
+	}
+	if (i > len*NUMPRIMES) return; // Good
+	const int r = (i - 1) / len;
+	const int mod = primes[r];
+	const int x = d_a[i];
+	const int y = d_b[i];
+	d_out[i] = getRemainder(x + y, mod);
+}
+
+// WORKS FOR SAME SIZE ADDITION
+void addGPU(int* d_out, int* d_a, int* d_b, int* d_primes) {
+	// Grab the length
+	int* lenGrabber = (int*)calloc(1, sizeof(int));
+	cudaMemcpy(lenGrabber, d_a, sizeof(int), cudaMemcpyDeviceToHost);
+	int len = lenGrabber[0];
+
+	// Do the kernel call
+	addMods2<<<(len + TPB - 1)/TPB, TPB>>>(d_out, d_a, d_b, d_primes, len);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

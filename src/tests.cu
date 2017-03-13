@@ -106,4 +106,19 @@ void doTest(bool testArray[], Poly a, Poly b, int* primeArray)
 		printForReconstruction(c, primeArray);
 		printf("\n");
 	}
+
+	// testWorkOnGPU
+	if (testArray[9] == true)
+	{
+		printf("--Test workOnGPU()--\n");
+		Poly c = makePolyGivenLength(3);
+		int* d_a = makeGPUPoly(a);
+		int* d_b = makeGPUPoly(b);	
+		int* d_c = makeGPUPoly(c);
+		int* d_primes = makeGPUPrimes(primeArray);
+		addGPU(d_c, d_a, d_b, d_primes);
+		c = getGPUPoly(d_c);
+		printForReconstruction(c, primeArray);
+		printf("\n");
+	}
 }

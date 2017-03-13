@@ -31,4 +31,10 @@ void printForReconstruction(Poly g, int* primeArray);
 // Test function
 void doTest(bool array[], Poly a, Poly b, int* primeArray);
 
+// Testing
+int* makeGPUPoly(Poly a);
+Poly getGPUPoly(int* d_a);
+int* makeGPUPrimes(int* primes);
+void addGPU(int* d_out, int* d_a, int* d_b, int* d_primes);
+
 #endif
