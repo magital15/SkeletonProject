@@ -111,7 +111,7 @@ void doTest(bool testArray[], Poly a, Poly b, int* primeArray)
 	if (testArray[9] == true)
 	{
 		printf("--Test workOnGPU()--\n");
-		Poly c = makePolyGivenLength(3);
+		Poly c = makePolyGivenLength(5);
 		int* d_a = makeGPUPoly(a);
 		int* d_b = makeGPUPoly(b);	
 		int* d_c = makeGPUPoly(c);

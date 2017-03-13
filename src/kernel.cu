@@ -327,7 +327,11 @@ Poly exponentiateGPU(Poly a, int exp, int* primes) {
 
 //  ###########################################################
 // I can't believe this works
-
+// ##
+// To do:
+// 1. Move GPU poly functions to a different .cu file
+// 2. Make input poly length dynamic
+// 3. Make arithmetic functions return GPU polys
 
 int* makeGPUPoly(Poly a) {
 	// Create Pointers to arrays on CPU and GPU
@@ -379,9 +383,7 @@ int* makeGPUPrimes(int* primes) {
 
 Poly getGPUPoly(int* d_a) {
 	// Grab the length from the device poly
-	int* lenGrabber = (int*)calloc(1, sizeof(int));
-	cudaMemcpy(lenGrabber, d_a, sizeof(int), cudaMemcpyDeviceToHost);
-	int len = lenGrabber[0];
+	int len = lenGrabber(d_a);
 	int d_len = len*NUMPRIMES + 1;
 	
 	// Make a new poly based on the length
@@ -404,7 +406,7 @@ Poly getGPUPoly(int* d_a) {
 	return result;
 }
 
-// WORKS GREAT
+// WORKS
 __global__
 void addMods2(int* d_out, int* d_a, int* d_b, int* primes, int len)
 {
@@ -421,19 +423,92 @@ void addMods2(int* d_out, int* d_a, int* d_b, int* primes, int len)
 	d_out[i] = getRemainder(x + y, mod);
 }
 
-// WORKS FOR SAME SIZE ADDITION
+// WORKS
 void addGPU(int* d_out, int* d_a, int* d_b, int* d_primes) {
 	// Grab the length
-	int* lenGrabber = (int*)calloc(1, sizeof(int));
-	cudaMemcpy(lenGrabber, d_a, sizeof(int), cudaMemcpyDeviceToHost);
-	int len = lenGrabber[0];
+	int lenA = lenGrabber(d_a);
+	int lenB = lenGrabber(d_b);
+	int len = lenA >= lenB ? lenA : lenB;
+	int d_len = len*NUMPRIMES + 1;
+	// Copy smaller GPU Poly into bigger if  needed
+	// CAN BE ACCELERATED BY NOT ALWAYS COPYING SMALLER GPU POLY
+	// OR CAN BE ACCELERATED BY ADJUSTING ADDMODS FUNCTION (INPUT BOTH LENGTHS)
+	int* d_a2 = 0;
+	int* d_b2 = 0;
+	cudaMalloc(&d_a2, d_len*sizeof(int));
+	cudaMalloc(&d_b2, d_len*sizeof(int));
+	d_a2 = copyGPUGivenLen(d_a, len);
+	d_b2 = copyGPUGivenLen(d_b, len);
 
 	// Do the kernel call
-	addMods2<<<(len + TPB - 1)/TPB, TPB>>>(d_out, d_a, d_b, d_primes, len);
+	addMods2<<<(len + TPB - 1)/TPB, TPB>>>(d_out, d_a2, d_b2, d_primes, len);
+
+	cudaFree(d_a2);
+	cudaFree(d_b2);
 }
 
+// WORKS
+// Grabs the length from a GPU poly
+int lenGrabber(int* d_in) {
+	int* holder = (int*)calloc(1, sizeof(int));
+	cudaMemcpy(holder, d_in, sizeof(int), cudaMemcpyDeviceToHost);
+	return holder[0];
+}
 
+// WORKS
+// Copys a GPU poly into a bigger one
+// LOTS OF COPYS IN THIS ONE: CAN BE ACCELERATED, SEE BELOW FOR EXAMPLE
+int* copyGPUGivenLen(int* d_in, int len) {
+	Poly in = getGPUPoly(d_in);
+	in = copyIntoBigger(in, len);
+	int* result = makeGPUPoly(in);
+	return result;
+}
 
+/* EXAMPLE OF ACCELERATED GPUCOPY
+// Copys a GPU poly into a bigger one
+int* copyGPUGivenLen(int* d_in, int len) {
+	// Get Length of d_in
+	int origLen = lenGrabber(d_in);
+	printf("Orig Len = %i\n", origLen);
+	int d_origLen = origLen*NUMPRIMES + 1;
+	printf("d_origLen = %i\n", d_origLen);
+	int d_len = len*NUMPRIMES + 1;
+
+	// Allocate memory for the result
+	int* result = 0;
+	cudaMalloc(&result, d_len*sizeof(int));
+	// Allocate memory for the Host holder
+	int* CPUholder = (int*)calloc(d_origLen, sizeof(int));
+	// Allocate memory for new Host
+	int* CPUresult = (int*)calloc(d_len, sizeof(int));
+	// Copy Device data into CPU data
+	cudaMemcpy(CPUholder, d_in, d_origLen*sizeof(int), cudaMemcpyDeviceToHost);
+	// Iterate to get the new CPUresult
+	int counter = 0;
+	int pos = 1;
+	CPUresult[0] = len;
+	for (int i = 1; i < d_origLen; i++) {
+		if (counter == origLen) {
+			for (int j = 0; j < (len - origLen); j++) {
+				CPUresult[pos] = 0;
+				pos++;
+			}
+			counter = 0;
+		}
+		CPUresult[pos] = CPUholder[i];
+		pos++;
+		counter++;
+	}
+	// Copy CPU result into GPU result
+	// THIS COPY BREAKS IT
+	cudaMemcpy(result, CPUresult, d_len*sizeof(int), cudaMemcpyHostToDevice);
+
+	free(CPUholder);
+	free(CPUresult);
+	return result;
+}
+*/
 
 
 

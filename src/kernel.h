@@ -28,13 +28,18 @@ Poly makePolyGivenLength(int length);
 Poly copyIntoBigger(Poly a, int len);
 void printForReconstruction(Poly g, int* primeArray);
 
+// GPU Initializer wrapper functions??
+// MAYBE PUT COMMON USE GPU FUNCTIONS HERE
+
 // Test function
 void doTest(bool array[], Poly a, Poly b, int* primeArray);
 
-// Testing
+// GPU wrapper functions
 int* makeGPUPoly(Poly a);
 Poly getGPUPoly(int* d_a);
 int* makeGPUPrimes(int* primes);
 void addGPU(int* d_out, int* d_a, int* d_b, int* d_primes);
+int lenGrabber(int* d_in);
+int* copyGPUGivenLen(int* d_in, int len);
 
 #endif
