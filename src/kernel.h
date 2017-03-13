@@ -11,6 +11,9 @@ typedef struct Poly_t {
 	PolyDense members[NUMPRIMES + 1];
 }Poly;
 
+// Test function
+void doTest(bool array[], Poly a, Poly b, int* primeArray, int* d_primes);
+
 // Kernel wrapper functions
 void getMods(Poly p, int* primes);
 Poly addPolys(Poly a, Poly b, int* primes);
@@ -28,17 +31,13 @@ Poly makePolyGivenLength(int length);
 Poly copyIntoBigger(Poly a, int len);
 void printForReconstruction(Poly g, int* primeArray);
 
-// GPU Initializer wrapper functions??
-// MAYBE PUT COMMON USE GPU FUNCTIONS HERE
-
-// Test function
-void doTest(bool array[], Poly a, Poly b, int* primeArray);
+// GPU Initializer wrapper functions
 
 // GPU wrapper functions
 int* makeGPUPoly(Poly a);
-Poly getGPUPoly(int* d_a);
+Poly getGPUPoly(int* d_in);
 int* makeGPUPrimes(int* primes);
-void addGPU(int* d_out, int* d_a, int* d_b, int* d_primes);
+int* addGPU(int* d_a, int* d_b, int* d_primes);
 int lenGrabber(int* d_in);
 int* copyGPUGivenLen(int* d_in, int len);
 

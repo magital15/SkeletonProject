@@ -1,32 +1,27 @@
 #include "kernel.h"
 #include <stdio.h>
 
-void doTest(bool testArray[], Poly a, Poly b, int* primeArray)
+void doTest(bool testArray[], Poly a, Poly b, int* primeArray, int* d_primes)
 {
 	// testSetPrimes
-	if (testArray[0] == true)
-	{
+	if (testArray[0] == true) {
 		printf("--Test setPrimes()--\n");
-		for (int i = 0; i < NUMPRIMES; i++)
-		{
+		for (int i = 0; i < NUMPRIMES; i++) {
 			printf("primeArray[%i] is: %i\n", i, primeArray[i]);
 		}
 		printf("\n");
 	}
 
 	// testMakeNewPoly
-	if (testArray[1] == true)
-	{
+	if (testArray[1] == true) {
 		printf("--Test makeNewPoly()--\n");
-		for (int i = 0; i < a.length; i++)
-		{
+		for (int i = 0; i < a.length; i++) {
 			printf("a.members[0].coeffs[%i] is: %i\n", i, 
 					a.members[0].coeffs[i]);
 		}
 		printForReconstruction(a, primeArray);
 		printf("\n");
-		for (int i = 0; i < b.length; i++)
-		{
+		for (int i = 0; i < b.length; i++) {
 			printf("b.members[0].coeffs[%i] is: %i\n", i, 
 					b.members[0].coeffs[i]);
 		}
@@ -35,8 +30,7 @@ void doTest(bool testArray[], Poly a, Poly b, int* primeArray)
 	}
 	
 	// testAddPolys
-	if (testArray[2] == true)
-	{
+	if (testArray[2] == true) {
 		printf("--Test addPolys()--\n");
 		Poly c = addPolys(a, b, primeArray);
 		printf("Poly A + B\n");
@@ -45,8 +39,7 @@ void doTest(bool testArray[], Poly a, Poly b, int* primeArray)
 	}
 	
 	// testScalarMods
-	if (testArray[3] == true)
-	{
+	if (testArray[3] == true) {
 		int scalar = -2;	// Change the scalar input
 		printf("--Test scalarMods()--\n");
 		Poly c = scalarMultPoly(a, scalar, primeArray);
@@ -56,8 +49,7 @@ void doTest(bool testArray[], Poly a, Poly b, int* primeArray)
 	}
 	
 	// testSubtractPolys 
-	if (testArray[4] == true)
-	{
+	if (testArray[4] == true) {
 		printf("--Test subtractPolys()--\n");
 		Poly c = subtractPolys(a, b, primeArray);
 		printf("Poly A - B\n");
@@ -66,8 +58,7 @@ void doTest(bool testArray[], Poly a, Poly b, int* primeArray)
 	}
 	
 	// testMultiplyPolys
-	if (testArray[5] == true)
-	{
+	if (testArray[5] == true) {
 		printf("--Test multiplyPolys()--\n");
 		Poly c = multiplyPolys(a, b, primeArray);
 		printf("Poly A * B\n");
@@ -76,8 +67,7 @@ void doTest(bool testArray[], Poly a, Poly b, int* primeArray)
 	}
 	
 	// testSPoly
-	if (testArray[6] == true)
-	{
+	if (testArray[6] == true) {
 		printf("--Test sPoly()--\n");
 		Poly c = sPoly(a, b, primeArray);
 		printf("sPoly of A, B\n");
@@ -86,8 +76,7 @@ void doTest(bool testArray[], Poly a, Poly b, int* primeArray)
 	}
 	
 	// testExpPoly
-	if (testArray[7] == true)
-	{
+	if (testArray[7] == true) {
 		int exponent = 3;	// Change the exponent input
 		printf("--Test exponentiate()--\n");
 		Poly c = exponentiate(a, exponent, primeArray);
@@ -97,8 +86,7 @@ void doTest(bool testArray[], Poly a, Poly b, int* primeArray)
 	}
 	
 	// testExpPolyGPU
-	if (testArray[8] == true)
-	{
+	if (testArray[8] == true) {
 		int exponent = 3;	// Change the exponent input
 		printf("--Test exponentiateGPU()--\n");
 		Poly c = exponentiateGPU(a, exponent, primeArray);
@@ -107,17 +95,28 @@ void doTest(bool testArray[], Poly a, Poly b, int* primeArray)
 		printf("\n");
 	}
 
-	// testWorkOnGPU
-	if (testArray[9] == true)
-	{
-		printf("--Test workOnGPU()--\n");
-		Poly c = makePolyGivenLength(5);
+	// testAddOnGPU
+	if (testArray[9] == true) {
+		printf("--Test addOnGPU()--\n");
 		int* d_a = makeGPUPoly(a);
 		int* d_b = makeGPUPoly(b);	
-		int* d_c = makeGPUPoly(c);
-		int* d_primes = makeGPUPrimes(primeArray);
-		addGPU(d_c, d_a, d_b, d_primes);
-		c = getGPUPoly(d_c);
+		int* d_c = addGPU(d_a, d_b, d_primes);
+		Poly c = getGPUPoly(d_c);
+		printForReconstruction(c, primeArray);
+		printf("\n");
+	}
+
+	// testMultipleGPU
+	if (testArray[10] == true) {
+		int timesAdd = 32;
+		printf("--Test workOnGPU()--\n");
+		int* d_a = makeGPUPoly(a);
+		int* d_b = makeGPUPoly(b);	
+		int* d_c = 0;
+		for (int i = 0; i < timesAdd; i++) {
+			d_c = addGPU(d_a, d_c, d_primes);
+		}
+		Poly c = getGPUPoly(d_c);
 		printForReconstruction(c, primeArray);
 		printf("\n");
 	}

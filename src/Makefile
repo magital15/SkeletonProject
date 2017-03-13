@@ -3,7 +3,7 @@ NVCC_FLAGS = -g -G -Xcompiler -Wall
 
 all: main.exe
 
-main.exe: main.o kernel.o initializers.o tests.o
+main.exe: main.o kernel.o initializers.o tests.o kernelGPU.o
 	$(NVCC) $^ -o $@
 
 main.o: main.cpp kernel.h
@@ -17,3 +17,6 @@ initializers.o: initializers.cu kernel.h
 
 tests.o: tests.cu kernel.h
 	$(NVCC) $(NVCC_FLAGS) -c $< -o $@ 
+
+kernelGPU.o: kernelGPU.cu kernel.h
+	$(NVCC) $(NVCC_FLAGS) -c $< -o $@

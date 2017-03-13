@@ -1,0 +1,10 @@
+// WORKS, but Primitive version
+// Copys a GPU poly into a bigger one
+// LOTS OF COPYS IN THIS ONE: CAN BE ACCELERATED, SEE BELOW FOR EXAMPLE
+/*
+int* copyGPUGivenLen(int* d_in, int len) {
+	Poly in = getGPUPoly(d_in);
+	in = copyIntoBigger(in, len);
+	int* result = makeGPUPoly(in);
+	return result;
+}*/
