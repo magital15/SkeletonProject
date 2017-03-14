@@ -31,14 +31,19 @@ Poly makePolyGivenLength(int length);
 Poly copyIntoBigger(Poly a, int len);
 void printForReconstruction(Poly g, int* primeArray);
 
-// GPU Initializer wrapper functions
-
-// GPU wrapper functions
+// Initializer wrapper functions (GPU)
+int* makeGPUPrimes(int* primes);
 int* makeGPUPoly(Poly a);
 Poly getGPUPoly(int* d_in);
-int* makeGPUPrimes(int* primes);
-int* addGPU(int* d_a, int* d_b, int* d_primes);
-int lenGrabber(int* d_in);
 int* copyGPUGivenLen(int* d_in, int len);
+int lenGrabber(int* d_in);
+
+// GPU wrapper functions
+int* addGPU(int* d_a, int* d_b, int* d_primes);
+int* scalarModsGPU(int* d_in, int scalar, int* d_primes);
+int* subtractGPU(int* d_a, int* d_b, int* d_primes);
+int* multGPU(int* d_a, int* d_b, int* d_primes);
+int* appendGPU(int* d_a, int* d_b);
+
 
 #endif

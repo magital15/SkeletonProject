@@ -1,5 +1,7 @@
 #include "kernel.h"
 #include <stdio.h>
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
 
 void doTest(bool testArray[], Poly a, Poly b, int* primeArray, int* d_primes)
 {
@@ -109,13 +111,97 @@ void doTest(bool testArray[], Poly a, Poly b, int* primeArray, int* d_primes)
 	// testMultipleGPU
 	if (testArray[10] == true) {
 		int timesAdd = 32;
-		printf("--Test workOnGPU()--\n");
+		printf("--Test multipleGPU()--\n");
 		int* d_a = makeGPUPoly(a);
 		int* d_b = makeGPUPoly(b);	
 		int* d_c = 0;
 		for (int i = 0; i < timesAdd; i++) {
 			d_c = addGPU(d_a, d_c, d_primes);
 		}
+		Poly c = getGPUPoly(d_c);
+		printForReconstruction(c, primeArray);
+		printf("\n");
+	}
+
+	// testAddPolySpeeds
+	if (testArray[11] == true) {
+		// Setup number of times iterations
+		int times[] = {5, 10, 20, 50, 75, 100, 250, 500, 750, 1000};
+		int lenTimes = sizeof(times)/sizeof(*times);
+
+		// Initialize
+		Poly c = addPolys(a, b, primeArray);
+		int* d_a = makeGPUPoly(a);
+		int* d_b = makeGPUPoly(b);
+		int* d_c = 0;
+
+		float milliseconds1[lenTimes];
+		float milliseconds2[lenTimes];
+		
+		// Test 1
+		cudaEvent_t start1, stop1, start2, stop2;
+		cudaEventCreate(&start1);
+		cudaEventCreate(&stop1);
+		cudaEventCreate(&start2);
+		cudaEventCreate(&stop2);
+
+		for (int i = 0; i < lenTimes; i++) {
+			cudaEventRecord(start1);
+			for (int j = 0; j < times[i]; j++) {
+				c = addPolys(a, c, primeArray);
+			}
+			cudaEventRecord(stop1);
+			cudaEventSynchronize(stop1);
+			milliseconds1[i] = 0;
+			cudaEventElapsedTime(&milliseconds1[i], start1, stop1);
+		}
+		
+		for (int i = 0; i < lenTimes; i++) {
+			cudaEventRecord(start2);
+			for (int j = 0; j < times[i]; j++) {
+				d_c = addGPU(d_a, d_c, d_primes);
+			}
+			cudaEventRecord(stop2);
+			cudaEventSynchronize(stop2);
+			milliseconds2[i] = 0;
+			cudaEventElapsedTime(&milliseconds2[i], start2, stop2);
+		}
+
+		// Print Results
+		for (int i = 0; i < lenTimes; i++) {
+			printf("Times Added = %i\n", times[i]);
+			printf("CPU transfer (ms) = %f\n", milliseconds1[i]);
+			printf("GPU only (ms) = %f\n", milliseconds2[i]);
+		}
+	}
+
+	// testScalarModsGPU
+	if (testArray[12] == true) {
+		printf("--Test scalarModsGPU()--\n");
+		int* d_a = makeGPUPoly(a);	
+		int* d_c = scalarModsGPU(d_a, -1, d_primes);
+		Poly c = getGPUPoly(d_c);
+		printForReconstruction(c, primeArray);
+		printf("\n");
+	}
+
+	// testSubtractGPU
+	if (testArray[13] == true) {
+		printf("--Test subtractGPU()--\n");
+		int* d_a = makeGPUPoly(a);
+		int* d_b = makeGPUPoly(b);	
+		int* d_c = subtractGPU(d_a, d_b, d_primes);
+		Poly c = getGPUPoly(d_c);
+		printForReconstruction(c, primeArray);
+		printf("\n");
+	}
+
+	// testSubtractGPU
+	if (testArray[14] == true) {
+		printf("--Test multGPU()--\n");
+		int* d_a = makeGPUPoly(a);
+		int* d_b = makeGPUPoly(b);	
+		int* d_c = multGPU(d_a, d_b, d_primes);
 		Poly c = getGPUPoly(d_c);
 		printForReconstruction(c, primeArray);
 		printf("\n");
