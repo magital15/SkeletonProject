@@ -1,0 +1,31 @@
+--Test makeNewPoly()--
+a.members[0].coeffs[0] is: 15
+a.members[0].coeffs[1] is: 32
+a.members[0].coeffs[2] is: 8
+a.members[0].coeffs[3] is: 1
+a.members[0].coeffs[4] is: 4
+mp = {{31, 15,1,8,1,4},
+{29, 15,3,8,1,4},
+{23, 15,9,8,1,4},
+{19, 15,13,8,1,4},
+{17, 15,15,8,1,4}};
+
+b.members[0].coeffs[0] is: 51
+b.members[0].coeffs[1] is: 42
+b.members[0].coeffs[2] is: 99
+b.members[0].coeffs[3] is: 1
+mp = {{31, 20,11,6,1},
+{29, 22,13,12,1},
+{23, 5,19,7,1},
+{19, 13,4,4,1},
+{17, 0,8,14,1}};
+
+--Test multiplyPolys()--
+Poly A * B
+mp = {{31, 21,30,13,5,16,27,25,4},
+{29, 11,0,18,3,26,14,20,4},
+{23, 6,8,17,5,12,22,6,4},
+{19, 5,1,7,17,6,9,17,4},
+{17, 0,1,7,0,16,3,6,4}};
+
+RECONSTRUCT THE LAST MP, AND IT WILL BE THE RESULT OF A*B WHERE A = 15 + 32x + 8x^2 + x^3 + 4x^4 and B = 51 + 42x + 99x^2 + x^3
